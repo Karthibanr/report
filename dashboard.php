@@ -85,13 +85,19 @@
             $groupbyClause .=",u.programming";
         } 
     }
-// 1. Over ALL completion
+    $output='';
+    // 1. Over ALL completion
     $studentListSql = "SELECT DISTINCT username, CONCAT(firstname, ' ', lastname) AS fullname, institution,
                         department, section, graduation_year, batch, programming 
                         FROM users";
     $studentListSql .= $whereClause;
-    $studentListSql .= $groupbyClause;
-
-    echo $studentListSql;
-
+    $studentListResult = $conn->query($studentListSql);
+    if($studentListResult->num_rows>0){
+        while ($studentList= $studentListResult->fetch_assoc()) {
+            $username=$studentList["username"];
+        }
+    }
+    else{
+        echo "No student enrolled for given criteria!!!";
+    }
 ?>
