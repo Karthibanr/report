@@ -17,36 +17,73 @@
     $section = $_POST['section'];
     $programming = $_POST['programming'];
 
-    $whereClause = '';
+    $whereClause = $groupbyClause= '';
     
     if ($batch != "All") {
-        if ($whereClause == '') $whereClause = " WHERE batch = '".$batch."'";
-        else $whereClause .= " AND batch = '".$batch."'";
+        if ($whereClause == '') {
+            $whereClause = " WHERE batch = '".$batch."'";
+            $groupbyClause =' u.batch';
+        }
+        else{
+            $whereClause .= " AND batch = '".$batch."'";
+            $groupbyClause .=',u.batch';
+        } 
+        
     }
 
     if ($department != "All") {
-        if ($whereClause == '') $whereClause = " WHERE department = '".$department."'";
-        else $whereClause .= " AND department = '".$department."'";
+        if ($whereClause == ''){
+            $whereClause = " WHERE department = '".$department."'";
+            $groupbyClause = " u.department";
+        } 
+        else{
+            $whereClause .= " AND department = '".$department."'";
+            $groupbyClause .= ",u.department";
+        } 
     }
 
     if ($institution != "All") {
-        if ($whereClause == '') $whereClause = " WHERE institution = '".$institution."'";
-        else $whereClause .= " AND institution = '".$institution."'";
+        if ($whereClause == ''){
+            $whereClause = " WHERE institution = '".$institution."'";
+            $groupbyClause = " u.institution";
+        } 
+        else{
+            $whereClause .= " AND institution = '".$institution."'";
+            $groupbyClause .=",u.institution";
+        } 
     }
 
     if ($graduation_year != "All") {
-        if ($whereClause == '') $whereClause = " WHERE graduation_year = '".$graduation_year."'";
-        else $whereClause .= " AND graduation_year = '".$graduation_year."'";
+        if ($whereClause == ''){
+            $whereClause = " WHERE graduation_year = '".$graduation_year."'";
+            $groupbyClause =" u.graduation_year";
+        } 
+        else{
+            $whereClause .= " AND graduation_year = '".$graduation_year."'";
+            $groupbyClause .=",u.graduation_year";
+        } 
     }
 
     if ($section != "All") {
-        if ($whereClause == '') $whereClause = " WHERE section = '".$section."'";
-        else $whereClause .= " AND section = '".$section."'";
+        if ($whereClause == ''){
+            $whereClause = " WHERE section = '".$section."'";
+            $groupbyClause =" u.section";
+        } 
+        else{
+            $whereClause .= " AND section = '".$section."'";
+            $groupbyClause .=",u.section";
+        } 
     }
 
     if ($programming != "All") {
-        if ($whereClause == '') $whereClause = " WHERE programming = '".$programming."'";
-        else $whereClause .= " AND programming = '".$programming."'";
+        if ($whereClause == ''){
+            $whereClause = " WHERE programming = '".$programming."'";
+            $groupbyClause =" u.programming";
+        } 
+        else{
+            $whereClause .= " AND programming = '".$programming."'";
+            $groupbyClause .=",u.programming";
+        } 
     }
 
     $studentListSql = "SELECT DISTINCT username, CONCAT(firstname, ' ', lastname) AS fullname, institution,
