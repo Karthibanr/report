@@ -1,5 +1,5 @@
 <?php
-echo '<form method="POST" action="php/dashboard.php">';
+echo '<form method="POST" action="Trigger/calculatePercentage.php">';
 include 'php/institute.php';
 include 'php/graduationYear.php';
 include 'php/department.php';
