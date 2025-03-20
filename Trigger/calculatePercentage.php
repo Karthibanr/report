@@ -141,6 +141,7 @@ if ($result->num_rows > 0) {
 
         // Practice Problem Solving couse level 1 to 8
         foreach ($ppscourses as $course) {
+            $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -158,13 +159,15 @@ if ($result->num_rows > 0) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -183,6 +186,7 @@ if ($result->num_rows > 0) {
 
         // Practice  DS Course
         foreach ($pdscourses as $course) {
+            $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -200,13 +204,15 @@ if ($result->num_rows > 0) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -224,6 +230,7 @@ if ($result->num_rows > 0) {
 
         // Practice  DB Course
 foreach ($pdbcourses as $course) {
+    $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -241,13 +248,15 @@ foreach ($pdbcourses as $course) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -265,6 +274,7 @@ foreach ($pdbcourses as $course) {
 
         // Practice  OOPS Course
 foreach ($poopcourses as $course) {
+    $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -282,13 +292,15 @@ foreach ($poopcourses as $course) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -306,6 +318,7 @@ foreach ($poopcourses as $course) {
 
         // Test PS Course
 foreach ($tpscourses as $course) {
+    $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -323,13 +336,15 @@ foreach ($tpscourses as $course) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -348,6 +363,7 @@ foreach ($tpscourses as $course) {
 
         // Test  DS Course
 foreach ($tdscourses as $course) {
+    $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -365,13 +381,15 @@ foreach ($tdscourses as $course) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -390,6 +408,7 @@ foreach ($tdscourses as $course) {
 
         // Test  DB Course
 foreach ($tdbcourses as $course) {
+    $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -407,13 +426,15 @@ foreach ($tdbcourses as $course) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
@@ -432,6 +453,7 @@ foreach ($tdbcourses as $course) {
 
         // Test  OOPS Course
 foreach ($toopcourses as $course) {
+    $tempCourse=$course;
             $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
@@ -449,13 +471,15 @@ foreach ($toopcourses as $course) {
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
                         $categoryTotal+=$completionRow["Percentage"];
-                        $tempCourse=$course;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
                     values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
+                $levelInsertSql="insert into levelScore(username,course_name,total)
+                values('".$row['username']."','".$course."','0');";
+                $levelInsertResult = $conn->query($levelInsertSql);
                 $output .= '<td>0</td>';
             }
         }
