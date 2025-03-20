@@ -106,7 +106,7 @@
         <td rowspan=3>Username</td>
         <td colspan=36> Practice - Report</td>
         <td colspan=36> Test - Report </td>
-        <td rowspan=3>Over-all Rank</td>
+        <td rowspan=3>Over-all Total</td>
     </tr>
     <tr>
         <td colspan=9> Problem Solving </td>
