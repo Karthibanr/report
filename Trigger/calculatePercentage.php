@@ -150,15 +150,19 @@ if ($result->num_rows > 0) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                                        values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -188,15 +192,19 @@ if ($result->num_rows > 0) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -225,15 +233,19 @@ foreach ($pdbcourses as $course) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -262,15 +274,19 @@ foreach ($poopcourses as $course) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -299,15 +315,19 @@ foreach ($tpscourses as $course) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -337,15 +357,19 @@ foreach ($tdscourses as $course) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -375,15 +399,19 @@ foreach ($tdbcourses as $course) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
@@ -413,15 +441,19 @@ foreach ($toopcourses as $course) {
             $completionResult = $conn->query($completionQuery);
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
-                    if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
+                    if ($completionRow["Percentage"] == NULL){
+                        $completionRow['Percentage']=0;
+                        $output .= '<td>0</td>';
+                    }
+                        
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $levelInsertSql="insert into levelScore(username,course_name,total)
-                            values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
-                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
                         $tempCourse=$course;
                     }
+                    $levelInsertSql="insert into levelScore(username,course_name,total)
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
                 $output .= '<td>0</td>';
