@@ -133,6 +133,7 @@
     <tbody>';
 
 $categoryTotal=$overAllTotal=0;
+$tempCourse='';
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -152,7 +153,11 @@ if ($result->num_rows > 0) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                                        values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -160,7 +165,16 @@ if ($result->num_rows > 0) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
         $overAllTotal+=$categoryTotal;
+
         $categoryTotal=0;
 
         // Practice  DS Course
@@ -177,7 +191,11 @@ if ($result->num_rows > 0) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -185,6 +203,14 @@ if ($result->num_rows > 0) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
@@ -202,7 +228,11 @@ foreach ($pdbcourses as $course) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -210,6 +240,14 @@ foreach ($pdbcourses as $course) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
@@ -227,7 +265,11 @@ foreach ($poopcourses as $course) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -235,6 +277,14 @@ foreach ($poopcourses as $course) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
@@ -252,7 +302,11 @@ foreach ($tpscourses as $course) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -260,6 +314,15 @@ foreach ($tpscourses as $course) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
@@ -277,7 +340,11 @@ foreach ($tdscourses as $course) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -285,6 +352,15 @@ foreach ($tdscourses as $course) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
@@ -302,7 +378,11 @@ foreach ($tdbcourses as $course) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -310,6 +390,15 @@ foreach ($tdbcourses as $course) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
@@ -327,7 +416,11 @@ foreach ($toopcourses as $course) {
                     if ($completionRow["Percentage"] == NULL) $output .= '<td>0</td>';
                     else {
                         $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $levelInsertSql="insert into levelScore(username,course_name,total)
+                            values('.$row['username'].','.$course.','.$completionRow['Percentage'].');"
+                        $levelInsertResult = $conn->query($levelInsertSql);
                         $categoryTotal+=$completionRow["Percentage"];
+                        $tempCourse=$course;
                     }
                 }
             } else {
@@ -335,6 +428,14 @@ foreach ($toopcourses as $course) {
             }
         }
         $output .= '<td>'.$categoryTotal.'</td>';
+
+        $parts = explode(' - ', $tempCourse);
+        $insCourse = $parts[1] . ' - ' . $parts[2];
+
+        $cateInsertSql="insert into categoryScore(username,course_name,total)
+            values('.$row['username'].','.$insCourse.','.$categoryTotal.');"
+        $cateInsertResult = $conn->query($cateInsertSql);
+
         $overAllTotal+=$categoryTotal;
         $categoryTotal=0;
 
