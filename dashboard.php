@@ -85,10 +85,13 @@
             $groupbyClause .=",u.programming";
         } 
     }
-
+// 1. Over ALL completion
     $studentListSql = "SELECT DISTINCT username, CONCAT(firstname, ' ', lastname) AS fullname, institution,
                         department, section, graduation_year, batch, programming 
                         FROM users";
     $studentListSql .= $whereClause;
+    $studentListSql .= $groupbyClause;
+
+    echo $studentListSql;
 
 ?>
