@@ -86,6 +86,16 @@
         } 
     }
     $output='';
+
+    echo "Placement Course Completion Status";
+    
+    $completionQuery=" select count(*)  from levelScore ls
+                        join users u on ls.username=u.username" . $whereClause ." and ls.total > 80 and course_name = 'l1 - Practice - PS'
+                        and date=curdate()
+                        group by u.department ";
+
+    echo $completionQuery;
+
     // 1. Over ALL completion
     $studentListSql = "SELECT DISTINCT username, CONCAT(firstname, ' ', lastname) AS fullname, institution,
                         department, section, graduation_year, batch, programming 
