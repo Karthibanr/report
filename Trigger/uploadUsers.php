@@ -75,7 +75,7 @@ if ($result->num_rows > 0) {
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->bind_param('sssssssss', $username, $firstname, $lastname, $institution, $department, $section, $batch, $programming, $graduation_year);
             $insertStmt->execute();
-            // echo "Inserted: " . $username . "<br>";
+            echo "Inserted: " . $username . "<br>";
         } else {
             // Update the data if username already exists
             $updateQuery = "
