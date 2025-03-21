@@ -43,7 +43,7 @@
         <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex-shrink-0 flex items-center">
-                    <h1 class="text-xl font-bold text-white">Student Dashboard</h1>
+                    <h1 class="text-xl font-bold text-white">Dashboard</h1>
                 </div>
                 <div class="flex items-center space-x-3">
                     <button id="infoButton"
@@ -102,29 +102,24 @@
             <div class="border-b border-gray-200 mt-6">
                 <nav class="-mb-px flex space-x-8 overflow-x-auto">
                     <button
-                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-primary-500 font-medium text-sm text-primary-600 active"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-primary-500 font-medium text-sm text-primary-600 hover:text-green-600 active"
                         data-tab="completed-students">
-                        Completed Students
+                        Course Completion
                     </button>
                     <button
-                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
                         data-tab="test-scores">
                         Test Scores
                     </button>
                     <button
-                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        data-tab="placement-completion">
-                        Placement Completion
-                    </button>
-                    <button
-                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
                         data-tab="progression">
-                        Progression
+                        Score Progression
                     </button>
                     <button
-                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
                         data-tab="chart">
-                        Chart
+                        Score Chart
                     </button>
                 </nav>
             </div>

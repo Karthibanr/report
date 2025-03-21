@@ -14,11 +14,11 @@ function fetchFilterOptions($conn, $query, $fieldName) {
     return $options;
 }
 
+$filters['institution'] = fetchFilterOptions($conn, "SELECT DISTINCT institution FROM users ORDER BY institution;", 'institution');
+$filters['graduation Year'] = fetchFilterOptions($conn, "SELECT DISTINCT graduation_year FROM users ORDER BY graduation_year;", 'graduation_year');
 $filters['batch'] = fetchFilterOptions($conn, "SELECT DISTINCT batch FROM users ORDER BY batch;", 'batch');
 $filters['department'] = fetchFilterOptions($conn, "SELECT DISTINCT department FROM users ORDER BY department;", 'department');
-$filters['graduation Year'] = fetchFilterOptions($conn, "SELECT DISTINCT graduation_year FROM users ORDER BY graduation_year;", 'graduation_year');
-$filters['institution'] = fetchFilterOptions($conn, "SELECT DISTINCT institution FROM users ORDER BY institution;", 'institution');
-$filters['course'] = fetchFilterOptions($conn, "SELECT DISTINCT programming FROM users ORDER BY programming;", 'programming');
+$filters['course'] = fetchFilterOptions($conn, "SELECT DISTINCT course FROM users ORDER BY course;", 'course');
 $filters['section'] = fetchFilterOptions($conn, "SELECT DISTINCT section FROM users ORDER BY section;", 'section');
 
 $conn->close();
