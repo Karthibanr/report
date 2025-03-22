@@ -34,8 +34,7 @@ $query = "
     LEFT JOIN
         sietlms_user_info_data ucf3 ON ucf3.userid = u.id AND ucf3.fieldid = (SELECT id FROM sietlms_user_info_field WHERE shortname = 'programming')
     LEFT JOIN
-        sietlms_user_info_data ucf4 ON ucf4.userid = u.id AND ucf4.fieldid = (SELECT id FROM sietlms_user_info_field WHERE shortname = 'graduation_year')
-    where username in('ads_230121','cys_230066','anjuts014@gmail.com');
+        sietlms_user_info_data ucf4 ON ucf4.userid = u.id AND ucf4.fieldid = (SELECT id FROM sietlms_user_info_field WHERE shortname = 'graduation_year');
 ";
 
 echo $query;
