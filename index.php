@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Prepare the SQL query to fetch the user by username
-        $sql = "SELECT id, username, password FROM mdl_user WHERE username = :username";
+        $sql = "SELECT id, username, password FROM sietlms_user WHERE username = :username";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':username', $user);
         $stmt->execute();
