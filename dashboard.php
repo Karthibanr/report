@@ -268,7 +268,7 @@
                  <!-- Passwords Tab -->
                  <div id="passwords" class="tab-content hidden">
                     <div class="overflow-x-auto">
-                        <?php include 'trigger/passwords.php'; ?>
+                        <?php include 'displayPassword.php'; ?>
                     </div>
                 </div>
             </div>
