@@ -5,7 +5,7 @@
 
     $host = "localhost";  
     $user = "root";       
-    $password = "password";       
+    $password = "";       
     $database = "report"; 
 
     $conn = new mysqli($host, $user, $password, $database);
