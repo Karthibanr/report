@@ -30,9 +30,10 @@ $reportDB='report';
                                         WHERE name = '".$row['assessmentName']."'";
 
                 $originalUpdateResult=$conn->query($originalUpdateSql);
-                
+
                 $checkSql="select * from password_Details
-                            where course_name='".$row['courseName']."' and assessment_name='".$row['assessmentName']."';";
+                            where course_name='".$row['courseName']."' 
+                            and assessment_name='".$row['assessmentName']."';";
                 // echo $checkSql;
                 $checkResult=$connReport->query($checkSql);
                 if($checkResult->num_rows>0){
@@ -43,13 +44,11 @@ $reportDB='report';
                     $updateResult=$connReport->query($updateSQL);
                 }
                 else{
-                    $insertSql="insert into password_Details values('".$row['courseName']."','".$row['assessmentName']."',".$newPassword.",".$row['QuitPassword'].");";
+                    $insertSql="insert into password_Details values('".$row['courseName']."','".$row['assessmentName']."','".$newPassword."','".$row['QuitPassword']."');";
+                    // echo $insertSql;
                     $insertResult=$connReport->query($insertSql);
                 }
             }
-        }
-        else{
-            echo "FALSE";
         }
         $conn->close();
         $connReport->close();
