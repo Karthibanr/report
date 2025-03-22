@@ -1,3 +1,4 @@
+@ -0,0 +1,661 @@
 <?php include 'filters.php'; ?>
 
 <!DOCTYPE html>
@@ -120,6 +121,11 @@
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
                         data-tab="chart">
                         Score Chart
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
+                        data-tab="passwords">
+                        Passwords
                     </button>
                 </nav>
             </div>
@@ -257,6 +263,13 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Placement Statistics</h3>
                             <canvas id="placementChart" height="300"></canvas>
                         </div>
+                    </div>
+                </div>
+
+                 <!-- Passwords Tab -->
+                 <div id="passwords" class="tab-content hidden">
+                    <div class="overflow-x-auto">
+                        <?php include 'trigger/passwords.php'; ?>
                     </div>
                 </div>
             </div>

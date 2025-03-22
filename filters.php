@@ -18,7 +18,7 @@ $filters['institution'] = fetchFilterOptions($conn, "SELECT DISTINCT institution
 $filters['graduation Year'] = fetchFilterOptions($conn, "SELECT DISTINCT graduation_year FROM users ORDER BY graduation_year;", 'graduation_year');
 $filters['batch'] = fetchFilterOptions($conn, "SELECT DISTINCT batch FROM users ORDER BY batch;", 'batch');
 $filters['department'] = fetchFilterOptions($conn, "SELECT DISTINCT department FROM users ORDER BY department;", 'department');
-$filters['course'] = fetchFilterOptions($conn, "SELECT DISTINCT course FROM users ORDER BY course;", 'course');
+$filters['course'] = fetchFilterOptions($conn, "SELECT DISTINCT programming FROM users ORDER BY programming;", 'programming');
 $filters['section'] = fetchFilterOptions($conn, "SELECT DISTINCT section FROM users ORDER BY section;", 'section');
 
 $conn->close();

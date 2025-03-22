@@ -12,6 +12,18 @@ $data = [
 // Base user columns
 $baseColumns = ["username", "institution", "department", "section", "batch", "programming", "graduation_year"];
 
+// Categories to calculate rank for
+$rankCategories = [
+    "Practice - PS",
+    "Practice - DS",
+    "Practice - DB", 
+    "Practice - OOP",
+    "Test - PS",
+    "Test - DS",
+    "Test - DB",
+    "Test - OOP"
+];
+
 // First get all users
 $usersQuery = "SELECT * FROM users";
 $usersResult = $conn->query($usersQuery);
@@ -106,6 +118,10 @@ while ($row = $usersResult->fetch_assoc()) {
     foreach ($categoryColumns as $course) {
         $userData[$course] = null;
         $userData[$course . " - Diff"] = null;
+        // Add rank column for categories that need ranking
+        if (in_array($course, $rankCategories)) {
+            $userData[$course . " - Rank"] = null;
+        }
     }
     
     // Initialize level columns with null values
@@ -209,13 +225,50 @@ while ($row = $previousLevelResult->fetch_assoc()) {
     }
 }
 
+// Calculate ranks for the specified categories
+foreach ($rankCategories as $category) {
+    // Collect all scores for this category
+    $scores = [];
+    foreach ($usersData as $username => $userData) {
+        if (!is_null($userData[$category])) {
+            $scores[$username] = $userData[$category];
+        }
+    }
+    
+    // Sort scores in descending order
+    arsort($scores);
+    
+    // Assign ranks
+    $rank = 1;
+    $lastScore = null;
+    $sameRankCount = 0;
+    
+    foreach ($scores as $username => $score) {
+        // If this score is different from the previous one, update rank
+        if ($lastScore !== null && $score != $lastScore) {
+            $rank += $sameRankCount;
+            $sameRankCount = 1;
+        } else {
+            $sameRankCount++;
+        }
+        
+        $usersData[$username][$category . " - Rank"] = $rank;
+        $lastScore = $score;
+    }
+}
+
 // Build headers
 $headers = $baseColumns;
 
-// Add category columns with their diff columns
+// Add category columns with their diff and rank columns
 foreach ($categoryColumns as $course) {
     $headers[] = $course;
     $headers[] = $course . " - Diff";
+    
+    // Add rank column for categories that need ranking
+    if (in_array($course, $rankCategories)) {
+        $headers[] = $course . " - Rank";
+    }
 }
 
 // Add level columns with their diff columns
