@@ -1,68 +1,153 @@
 <?php
 include 'connection.php';
 
-// Overall Scores
-$sql = "SELECT u.user_id, u.name, u.institution, u.department, u.section, u.batch, u.course, u.graduation_year, s.score, c.course_name
-        FROM users u
-        JOIN scores s ON s.user_id = u.user_id
-        JOIN courses c ON c.course_id = s.course_id";
-
-// Execute query
-$result = $conn->query($sql);
-
-if (!$result) {
-    die(json_encode([
-        "status" => "error",
-        "message" => "Query failed: " . $conn->error
-    ]));
-}
-
-// Initialize data structure
+// Initialize data structure with your required format
 $data = [
-    "course_completion" => [
+    "overall_performance" => [
         "headers" => [],
         "rows" => []
     ]
 ];
 
-// Process the results
-$usersData = [];
-$courseColumns = [];
-$baseColumns = ["user_id", "name", "institution", "department", "section", "batch", "course", "graduation_year"];
+// Base user columns
+$baseColumns = ["username", "institution", "department", "section", "batch", "programming", "graduation_year"];
 
-// First pass: collect all unique users and courses
-while ($row = $result->fetch_assoc()) {
-    $userId = $row['user_id'];
-    $courseName = $row['course_name'];
-    
-    // Add the course to our list of columns if it's not already there
-    if (!in_array($courseName, $courseColumns)) {
-        $courseColumns[] = $courseName;
-    }
-    
-    // Initialize user data if not already done
-    if (!isset($usersData[$userId])) {
-        $userData = [];
-        foreach ($baseColumns as $col) {
-            $userData[$col] = $row[$col];
-        }
-        $usersData[$userId] = $userData;
-    }
-    
-    // Add the score for this course
-    $usersData[$userId][$courseName] = $row['score'];
+// First get all users
+$usersQuery = "SELECT * FROM users";
+$usersResult = $conn->query($usersQuery);
+
+if (!$usersResult) {
+    die(json_encode([
+        "status" => "error",
+        "message" => "Users query failed: " . $conn->error
+    ]));
 }
 
-// Build headers (base columns + course columns)
-$data["course_completion"]["headers"] = array_merge($baseColumns, $courseColumns);
+// Get all category courses
+$categoryCoursesQuery = "SELECT DISTINCT course_name FROM categoryscore";
+$categoryCoursesResult = $conn->query($categoryCoursesQuery);
 
-// Build rows in the requested format
-foreach ($usersData as $userData) {
-    $rowData = [];
-    foreach ($data["course_completion"]["headers"] as $header) {
-        $rowData[$header] = isset($userData[$header]) ? $userData[$header] : null;
+if (!$categoryCoursesResult) {
+    die(json_encode([
+        "status" => "error",
+        "message" => "Category courses query failed: " . $conn->error
+    ]));
+}
+
+$categoryColumns = [];
+while ($row = $categoryCoursesResult->fetch_assoc()) {
+    $categoryColumns[] = $row['course_name'];
+}
+
+// Get all level courses
+$levelCoursesQuery = "SELECT DISTINCT course_name FROM levelscore";
+$levelCoursesResult = $conn->query($levelCoursesQuery);
+
+if (!$levelCoursesResult) {
+    die(json_encode([
+        "status" => "error",
+        "message" => "Level courses query failed: " . $conn->error
+    ]));
+}
+
+$levelColumns = [];
+while ($row = $levelCoursesResult->fetch_assoc()) {
+    $levelColumns[] = $row['course_name'];
+}
+
+// Initialize users data structure
+$usersData = [];
+while ($row = $usersResult->fetch_assoc()) {
+    $username = $row['username'];
+    $userData = [];
+    
+    // Add base user information
+    foreach ($baseColumns as $col) {
+        // Only add columns that actually exist in the users table
+        if (isset($row[$col])) {
+            $userData[$col] = $row[$col];
+        }
     }
-    $data["course_completion"]["rows"][] = $rowData;
+    
+    // Initialize course data with null values
+    foreach ($categoryColumns as $course) {
+        $userData[$course] = null;
+    }
+    
+    // Initialize level columns with null values
+    foreach ($levelColumns as $levelCourse) {
+        $userData[$levelCourse] = null;
+    }
+    
+    $usersData[$username] = $userData;
+}
+
+// Get category scores
+$categoryQuery = "SELECT username, course_name, total FROM categoryscore";
+$categoryResult = $conn->query($categoryQuery);
+
+if (!$categoryResult) {
+    die(json_encode([
+        "status" => "error",
+        "message" => "Category scores query failed: " . $conn->error
+    ]));
+}
+
+// Add category scores to user data
+while ($row = $categoryResult->fetch_assoc()) {
+    $username = $row['username'];
+    $course = $row['course_name'];
+    $total = $row['total'];
+    
+    if (isset($usersData[$username])) {
+        $usersData[$username][$course] = $total;
+    }
+}
+
+// Get level scores
+$levelQuery = "SELECT username, course_name, total FROM levelscore";
+$levelResult = $conn->query($levelQuery);
+
+if (!$levelResult) {
+    die(json_encode([
+        "status" => "error",
+        "message" => "Level scores query failed: " . $conn->error
+    ]));
+}
+
+// Add level scores to user data
+while ($row = $levelResult->fetch_assoc()) {
+    $username = $row['username'];
+    $levelCourse = $row['course_name'];
+    $total = $row['total'];
+    
+    if (isset($usersData[$username])) {
+        $usersData[$username][$levelCourse] = $total;
+    }
+}
+
+// Build headers
+$headers = $baseColumns;
+
+// Add category columns
+foreach ($categoryColumns as $course) {
+    $headers[] = $course;
+}
+
+// Add level columns
+foreach ($levelColumns as $levelCourse) {
+    $headers[] = $levelCourse;
+}
+
+$data["overall_performance"]["headers"] = $headers;
+
+// Build rows
+foreach ($usersData as $userData) {
+    $row = [];
+    foreach ($headers as $header) {
+        $row[$header] = isset($userData[$header]) ? $userData[$header] : null;
+    }
+    $data["overall_performance"]["rows"][] = $row;
 }
 
 // Close database connection

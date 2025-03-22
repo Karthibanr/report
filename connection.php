@@ -1,8 +1,8 @@
 <?php
-$host = "localhost";  
+$host = "127.0.0.1";  
 $user = "root";       
 $password = "";       
-$database = "reports"; 
+$database = "report"; 
 
 // Create a single database connection
 $conn = new mysqli($host, $user, $password, $database);
