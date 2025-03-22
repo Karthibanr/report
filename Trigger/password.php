@@ -5,31 +5,33 @@ $host = 'localhost'; // replace with your host
 $dbname = 'siet_lms'; // replace with your database name
 $username = 'root'; // replace with your database username
 $password = 'password'; // replace with your database password
-
-// New password to set
-$newPassword = 'newpassword';  // Replace with the new quiz password
-
-// Course name to filter
-$courseName = 'L1 - Test - PS - 1';  // Replace with the course name
-
+$reportDB='report';
 try {
     // Create a PDO instance for database connection
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $pdo2 = new PDO("mysql:host=$host;dbname=$reportDB", $username, $password);
+    $pdo2->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     // Start transaction to ensure consistency
     $pdo->beginTransaction();
     
-    // Prepare the SQL query to update the password (excluding quitpassword)
+    $assmentName="select distinct name from sietlms_quiz where name like 'L_ - Test%';";
+    $assStmt = $pdo->prepare($assmentName);
+    $assStmt->execute();
+
+    $assessments = $assStmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($assessments as $courseName) {
+        $newPassword = str_pad(rand(0, pow(10, 6) - 1), 6, '0', STR_PAD_LEFT);
+    
     $sql = "
     UPDATE 
-        sietlms_quiz q
-    JOIN 
-        sietlms_course sc ON sc.id = q.course
+        sietlms_quiz
     SET 
-        q.password = :newPassword
+        password = :newPassword
     WHERE 
-        q.name = :courseName
+        name = :courseName
     ";
     
     // Prepare the statement
@@ -41,10 +43,11 @@ try {
     
     // Execute the query
     $stmt->execute();
-    
-    // Check if any rows were updated
-    if ($stmt->rowCount() > 0) {
-        // If the update was successful, fetch the updated data
+
+    }
+    $pdo->commit();
+
+    $courseName=
         $sqlSelect = "
         SELECT 
             sc.fullname AS courseName, 
@@ -58,39 +61,48 @@ try {
         LEFT JOIN 
             sietlms_quizaccess_seb_quizsettings sq ON sq.quizid = q.id
         WHERE 
-            q.name = :courseName
+            q.name like 'L_ - Test%'
         ORDER BY 
             q.name
         ";
         
         // Prepare the select query
         $stmtSelect = $pdo->prepare($sqlSelect);
-        $stmtSelect->bindParam(':courseName', $courseName);
         $stmtSelect->execute();
         
         // Fetch the results
         $quizzes = $stmtSelect->fetchAll(PDO::FETCH_ASSOC);
         
         // Display results in an HTML table
-        echo "<table border='1'>";
-        echo "<tr><th>Course Name</th><th>Assessment Name</th><th>Password</th><th>Quit Password</th></tr>";
         
         foreach ($quizzes as $quiz) {
-            echo "<tr>
-                    <td>" . htmlspecialchars($quiz['courseName']) . "</td>
-                    <td>" . htmlspecialchars($quiz['assessmentName']) . "</td>
-                    <td>" . htmlspecialchars($quiz['Password']) . "</td>
-                    <td>" . htmlspecialchars($quiz['QuitPassword']) . "</td>
-                  </tr>";
+            $checkSql="select * from password_Details
+            where course_name = :courseName
+            and assessment_name= :assessmentName";
+            $checkstmt = $pdo2->prepare($checkSql);
+            $checkstmt->bindParam(':courseName', $quiz['courseName']);
+            $checkstmt->bindParam(':assessmentName', $quiz['assessmentName']);
+            $stmt->execute();
+            if ($stmt->rowCount() > 0) {
+                $finalSql="update password_Details set password= :password";
+                $finalstmt=$pdo2->prepare($finalSql);
+                $finalstmt->bindParam(':password',$quiz['Password']);
+            }
+            else{
+                $finalSql="insert into password_Details values(:courseName,:assessmentName,:password,:quit);";
+                $finalstmt=$pdo2->prepare($finalSql);
+                $finalstmt->bindParam(':courseName', $quiz['courseName']);
+                $finalstmt->bindParam(':assessmentName', $quiz['assessmentName']);
+                $finalstmt->bindParam(':password',$quiz['Password']);
+                $finalstmt->bindParam(':quit',$quiz['QuitPassword']);
+            }
+            $finalstmt->execute();
         }
         
-        echo "</table>";
-    } else {
-        echo "No records were updated.";
-    }
+
 
     // Commit the transaction
-    $pdo->commit();
+    
 
 } catch (PDOException $e) {
     // Rollback the transaction in case of an error
