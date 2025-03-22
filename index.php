@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $reportPdo = new PDO("mysql:host=$host;dbname=$dbReportname", $username, $password);
         $reportPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $reportSql="select * from login WHERE username = :username";
+        $reportSql="select * from login WHERE email = :username";
         $statement = $reportPdo->prepare($reportSql);
         $statement -> bindParam(':username', $user);
         $statement->execute();
@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if(!$checkUser){
             $error = 'Unauthorized User';
         }
+        else{
 
 
         // Prepare the SQL query to fetch the user by username
@@ -57,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $error = 'User not found!';
         }
-    } catch (PDOException $e) {
+    }
+ } catch (PDOException $e) {
         $error = 'Error: ' . $e->getMessage();
     }
 }
