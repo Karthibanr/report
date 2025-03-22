@@ -1,4 +1,3 @@
-@ -0,0 +1,661 @@
 <?php include 'filters.php'; ?>
 
 <!DOCTYPE html>
