@@ -35,6 +35,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- Chart.js for charts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <!-- DataTables with all required extensions -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/scroller/2.1.1/css/scroller.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.3.2/css/fixedHeader.dataTables.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.datatables.net/scroller/2.1.1/js/dataTables.scroller.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.3.2/js/dataTables.fixedHeader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -108,13 +124,18 @@
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
+                        data-tab="overall-scores">
+                        Overall Scores
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
                         data-tab="test-scores">
                         Test Scores
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
-                        data-tab="progression">
-                        Score Progression
+                        data-tab="practice-scores">
+                        Practice Scores
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
@@ -135,28 +156,16 @@
                 <div id="completed-students" class="tab-content">
                     <div class="overflow-x-auto">
                         <table id="completed-students-table" class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student ID</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Course</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Completion Date</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Data will be loaded dynamically -->
-                            </tbody>
+                            <!-- Data will be loaded dynamically -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Overall Scores Tab -->
+                <div id="overall-scores" class="tab-content hidden">
+                    <div class="overflow-x-auto">
+                        <table id="overall-scores-table" class="min-w-full divide-y divide-gray-200">
+                            <!-- Data will be loaded dynamically -->
                         </table>
                     </div>
                 </div>
@@ -165,58 +174,16 @@
                 <div id="test-scores" class="tab-content hidden">
                     <div class="overflow-x-auto">
                         <table id="test-scores-table" class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student ID</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Test Type</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Score</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Percentile</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Data will be loaded dynamically -->
-                            </tbody>
+                            <!-- Data will be loaded dynamically -->
                         </table>
                     </div>
                 </div>
 
-                <!-- Progression Tab -->
-                <div id="progression" class="tab-content hidden">
+                <!-- Practice Scores Tab -->
+                <div id="practice-scores" class="tab-content hidden">
                     <div class="overflow-x-auto">
-                        <table id="progression-table" class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student ID</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Current Level</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Progress</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Next Milestone</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Data will be loaded dynamically -->
-                            </tbody>
+                        <table id="practice-scores-table" class="min-w-full divide-y divide-gray-200">
+                            <!-- Data will be loaded dynamically -->
                         </table>
                     </div>
                 </div>
@@ -360,51 +327,11 @@
     </div>
 
     <script>
-        // Sample data (would normally be fetched from a backend API)
-        const studentData = {
-            "completedStudents": [
-                { "id": "STD001", "name": "Jane Smith", "course": "Computer Science", "completionDate": "03/15/2025", "status": "Completed" },
-                { "id": "STD002", "name": "John Doe", "course": "Data Science", "completionDate": "02/28/2025", "status": "Completed" },
-                { "id": "STD003", "name": "Alex Johnson", "course": "Mathematics", "completionDate": "01/10/2025", "status": "Completed" },
-                { "id": "STD004", "name": "Maria Garcia", "course": "Electrical Engineering", "completionDate": "03/05/2025", "status": "Completed" },
-                { "id": "STD005", "name": "Robert Williams", "course": "Physics", "completionDate": "02/15/2025", "status": "Completed" }
-            ],
-            "testScores": [
-                { "id": "STD001", "name": "Jane Smith", "testType": "Midterm", "score": 89, "percentile": "92%" },
-                { "id": "STD002", "name": "John Doe", "testType": "Final", "score": 95, "percentile": "98%" },
-                { "id": "STD003", "name": "Alex Johnson", "testType": "Midterm", "score": 82, "percentile": "84%" },
-                { "id": "STD003", "name": "Alex Johnson", "testType": "Final", "score": 88, "percentile": "90%" },
-                { "id": "STD004", "name": "Maria Garcia", "testType": "Midterm", "score": 91, "percentile": "94%" }
-            ],
-            "placementData": [
-                { "id": "STD001", "name": "Jane Smith", "company": "Tech Solutions Inc", "position": "Software Engineer", "status": "Completed" },
-                { "id": "STD002", "name": "John Doe", "company": "Data Analysts Co", "position": "Data Scientist", "status": "In Progress" },
-                { "id": "STD003", "name": "Alex Johnson", "company": "Research Lab", "position": "Research Assistant", "status": "Completed" },
-                { "id": "STD004", "name": "Maria Garcia", "company": "Energy Solutions", "position": "Electrical Engineer", "status": "In Progress" },
-                { "id": "STD005", "name": "Robert Williams", "company": "Physics Institute", "position": "Research Fellow", "status": "Not Started" }
-            ],
-            "progressionData": [
-                { "id": "STD001", "name": "Jane Smith", "level": "Advanced", "progress": 85, "nextMilestone": "Final Project" },
-                { "id": "STD002", "name": "John Doe", "level": "Intermediate", "progress": 60, "nextMilestone": "Advanced Module" },
-                { "id": "STD003", "name": "Alex Johnson", "level": "Beginner", "progress": 40, "nextMilestone": "Intermediate Assessment" },
-                { "id": "STD004", "name": "Maria Garcia", "level": "Advanced", "progress": 90, "nextMilestone": "Graduation" },
-                { "id": "STD005", "name": "Robert Williams", "level": "Intermediate", "progress": 70, "nextMilestone": "Advanced Module" }
-            ],
-            "chartData": {
-                "performance": {
-                    "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-                    "data": [75, 82, 79, 85, 88, 90]
-                },
-                "placement": {
-                    "labels": ["Placed", "In Progress", "Not Started"],
-                    "data": [65, 25, 10]
-                }
-            }
-        };
-
+        // Dashboard Data Renderer
         $(document).ready(function () {
             // Load initial data
-            loadData(studentData);
+            loadPasswordsTable();
+            fetchAndRenderAllData();
 
             // Tab functionality
             $('.tab-btn').click(function () {
@@ -417,11 +344,6 @@
                 $('.tab-content').addClass('hidden');
                 // Show the selected tab content
                 $('#' + $(this).data('tab')).removeClass('hidden');
-
-                // If chart tab is selected, initialize charts
-                if ($(this).data('tab') === 'chart') {
-                    initializeCharts(studentData.chartData);
-                }
             });
 
             // Modal functionality
@@ -454,51 +376,186 @@
                     if (item.value) formData[item.name] = item.value;
                 });
 
-                // In a real application, you would make an AJAX request to get filtered data
-                // For this example, we'll just filter the client-side data
-                const filteredData = filterData(studentData, formData);
-                loadData(filteredData);
+                // Fetch and render data with filters
+                fetchAndRenderAllData(formData);
+            });
+        });
 
-                // Update charts if chart tab is visible
-                if (!$('#chart').hasClass('hidden')) {
-                    initializeCharts(filteredData.chartData);
+        // Function to fetch and render all data tables
+        function fetchAndRenderAllData(filters = {}) {
+            // Show loading indicator
+            showLoading();
+
+            // Build query string from filters
+            const queryParams = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                queryParams.append(key, value);
+            });
+
+            const queryString = queryParams.toString() ? '?' + queryParams.toString() : '';
+
+            // Fetch data from server
+            $.ajax({
+                url: 'fetch_scores.php' + queryString,
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // Render each table with its respective data
+                        renderTable('completed-students', response.data.course_completion);
+                        renderTable('practice-scores', response.data.practice_scores);
+                        renderTable('test-scores', response.data.test_scores);
+                        if (response.data.overall_scores) {
+                            renderTable('overall-scores', response.data.overall_scores);
+                        }
+
+                        // Hide loading indicator
+                        hideLoading();
+                    } else {
+                        console.error('Error in API response:', response);
+                        showError('Failed to load data. Please try again.');
+                        hideLoading();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    showError('Error connecting to server. Please check your connection and try again.');
+                    hideLoading();
+                }
+            });
+        }
+
+        // Function to render each table with DataTables
+        function renderTable(tableId, tableData) {
+            if (!tableData || !tableData.headers || !tableData.rows) {
+                console.error(`Invalid data format for table ${tableId}`);
+                return;
+            }
+
+            const tableContainer = $(`#${tableId}-table`);
+
+            // Destroy existing DataTable if it exists
+            if ($.fn.DataTable.isDataTable(tableContainer)) {
+                tableContainer.DataTable().destroy();
+            }
+
+            tableContainer.empty();
+
+            // Process headers to create column definitions that correctly handle diff values
+            const columnDefs = [];
+            const baseHeaders = [];
+
+            tableData.headers.forEach(header => {
+                if (!header.includes('_diff')) {
+                    baseHeaders.push(header);
+
+                    // Check if there's a corresponding diff header
+                    const diffHeader = `${header}_diff`;
+                    if (tableData.headers.includes(diffHeader)) {
+                        columnDefs.push({
+                            targets: baseHeaders.length - 1,
+                            data: header,
+                            title: formatHeaderText(header),
+                            render: function (data, type, row) {
+                                if (type === 'display') {
+                                    const diffValue = row[diffHeader];
+                                    if (diffValue !== undefined && diffValue !== null && diffValue !== 0) {
+                                        const formattedDiff = diffValue > 0 ? `+${diffValue}` : diffValue;
+                                        return `${data} (${formattedDiff})`;
+                                    }
+                                }
+                                return data;
+                            }
+                        });
+                    } else {
+                        columnDefs.push({
+                            targets: baseHeaders.length - 1,
+                            data: header,
+                            title: formatHeaderText(header)
+                        });
+                    }
                 }
             });
 
-            // Initialize charts if chart tab is active by default
-            if (!$('#chart').hasClass('hidden')) {
-                initializeCharts(studentData.chartData);
-            }
-        });
+            // Initialize DataTable with horizontal scrolling and custom rendering
+            const dataTable = tableContainer.DataTable({
+                data: tableData.rows,
+                columns: baseHeaders.map(header => {
+                    return { data: header, title: formatHeaderText(header) };
+                }),
+                columnDefs: columnDefs,
+                responsive: false, // Disable responsive to ensure horizontal scrolling works
+                scrollX: true,     // Enable horizontal scrolling
+                scrollY: '400px',  // Fixed height for vertical scrolling
+                scrollCollapse: true,
+                paging: true,     // Disable pagination for scrolling
+                scroller: true,    // Enable virtual scrolling for performance
+                dom: 'Bfrtip',     // Button, filter, processing display elements
+                deferRender: true, // Improve performance with large datasets
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
+                        text: 'Toggle Columns'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                        text: 'Export CSV'
+                    }
+                ],
+                language: {
+                    search: "Filter:",
+                    info: "Showing _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                },
+                initComplete: function () {
+                    // Add custom styling to buttons
+                    $('.dt-buttons').addClass('mb-4');
 
-        // Function to filter data based on form inputs
-        function filterData(data, filters) {
-            // This is a simplified example. In a real application, 
-            // you would implement proper filtering logic
+                    // Ensure horizontal scrollbar is visible when needed
+                    $(`.dataTables_wrapper`).css('overflow-x', 'auto');
 
-            // For demonstration purposes, we're returning the original data
-            // In a real implementation, you would filter each data set based on the filters
-            return data;
+                    // Fix header width issues
+                    this.api().columns.adjust();
+                }
+            });
+
+            // Add custom search input above the table
+            const searchContainer = $('<div>').addClass('mb-4 flex items-center');
+            const searchLabel = $('<label>').addClass('mr-2 text-sm text-gray-700').text('Search:');
+            const searchInput = $('<input>')
+                .addClass('border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500')
+                .attr('type', 'search')
+                .attr('placeholder', 'Type to filter...');
+
+            searchContainer.append(searchLabel, searchInput);
+            tableContainer.before(searchContainer);
+
+            // Bind search input to DataTable
+            searchInput.on('keyup', function () {
+                dataTable.search(this.value).draw();
+            });
+
+            // Ensure columns adjust properly on window resize
+            $(window).on('resize', function () {
+                dataTable.columns.adjust();
+            });
         }
 
-        // Function to load data into tables
-        function loadData(data) {
-            // Load completed students data
-            loadCompletedStudentsTable(data.completedStudents);
-
-            // Load test scores data
-            loadTestScoresTable(data.testScores);
-
-            // Load placement data
-            loadPlacementTable(data.placementData);
-
-            // Load progression data
-            loadProgressionTable(data.progressionData);
-
-            // Load passwords data
-            loadPasswordsTable();
+        // Format header text for better readability
+        function formatHeaderText(header) {
+            // Replace hyphens with spaces and capitalize first letter of each word
+            return header
+                .replace(/_/g, ' ')
+                .replace(/-/g, ' ')
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
         }
 
+        // Function to load passwords table
         function loadPasswordsTable() {
             // Fetch password data from a separate endpoint
             $.ajax({
@@ -511,12 +568,12 @@
 
                     data.forEach(item => {
                         tableBody.append(`
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.course_name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessment_name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quit_password}</td>
-                </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.course_name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessment_name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quit_password}</td>
+                    </tr>
                 `);
                     });
                 },
@@ -527,171 +584,21 @@
             });
         }
 
-        // Function to load completed students table
-        function loadCompletedStudentsTable(data) {
-            const tableBody = $('#completed-students-table tbody');
-            tableBody.empty();
-
-            data.forEach(student => {
-                tableBody.append(`
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.course}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.completionDate}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            ${student.status}
-                        </span>
-                    </td>
-                </tr>
-            `);
-            });
+        // Helper functions for UI feedback
+        function showLoading() {
+            // Add a loading indicator to the active tab
+            $('.tab-content:not(.hidden)').append('<div class="loading-overlay flex items-center justify-center p-4"><span class="text-primary-600">Loading data...</span></div>');
         }
 
-        // Function to load test scores table
-        function loadTestScoresTable(data) {
-            const tableBody = $('#test-scores-table tbody');
-            tableBody.empty();
-
-            data.forEach(score => {
-                tableBody.append(`
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${score.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${score.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${score.testType}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${score.score}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${score.percentile}</td>
-                </tr>
-            `);
-            });
+        function hideLoading() {
+            $('.loading-overlay').remove();
         }
 
-        // Function to load placement table
-        function loadPlacementTable(data) {
-            const tableBody = $('#placement-table tbody');
-            tableBody.empty();
-
-            data.forEach(placement => {
-                const statusClass = placement.status === 'Completed'
-                    ? 'bg-green-100 text-green-800'
-                    : placement.status === 'In Progress'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800';
-                tableBody.append(`
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${placement.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${placement.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${placement.company}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${placement.position}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                            ${placement.status}
-                        </span>
-                    </td>
-                </tr>
-            `);
-            });
+        function showError(message) {
+            // Display error message to user
+            alert(message);
         }
 
-        // Function to load progression table
-        function loadProgressionTable(data) {
-            const tableBody = $('#progression-table tbody');
-            tableBody.empty();
-
-            data.forEach(progression => {
-                tableBody.append(`
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${progression.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${progression.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${progression.level}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-primary-600 h-2.5 rounded-full" style="width: ${progression.progress}%"></div>
-                        </div>
-                        <span class="text-xs text-gray-500">${progression.progress}%</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${progression.nextMilestone}</td>
-                </tr>
-            `);
-            });
-        }
-
-        // Function to initialize charts
-        function initializeCharts(data) {
-            // Performance Chart
-            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
-            const performanceChart = new Chart(performanceCtx, {
-                type: 'line',
-                data: {
-                    labels: data.performance.labels,
-                    datasets: [{
-                        label: 'Average Performance Score',
-                        data: data.performance.data,
-                        backgroundColor: 'rgba(22, 101, 52, 0.2)',
-                        borderColor: 'rgba(22, 101, 52, 1)',
-                        borderWidth: 2,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 50,
-                            max: 100
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return `Score: ${context.parsed.y}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Placement Chart
-            const placementCtx = document.getElementById('placementChart').getContext('2d');
-            const placementChart = new Chart(placementCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.placement.labels,
-                    datasets: [{
-                        data: data.placement.data,
-                        backgroundColor: [
-                            'rgba(22, 101, 52, 0.7)',
-                            'rgba(250, 204, 21, 0.7)',
-                            'rgba(107, 114, 128, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(22, 101, 52, 1)',
-                            'rgba(250, 204, 21, 1)',
-                            'rgba(107, 114, 128, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return `${context.label}: ${context.parsed}%`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
     </script>
 </body>
 
