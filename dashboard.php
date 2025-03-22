@@ -97,7 +97,7 @@
                     </div>
                 </div>
             </form>
-   
+
             <!-- Tab Navigation -->
             <div class="border-b border-gray-200 mt-6">
                 <nav class="-mb-px flex space-x-8 overflow-x-auto">
@@ -191,36 +191,6 @@
                     </div>
                 </div>
 
-                <!-- Placement Completion Tab -->
-                <div id="placement-completion" class="tab-content hidden">
-                    <div class="overflow-x-auto">
-                        <table id="placement-table" class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Student ID</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Company</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Position</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Data will be loaded dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <!-- Progression Tab -->
                 <div id="progression" class="tab-content hidden">
                     <div class="overflow-x-auto">
@@ -265,10 +235,34 @@
                     </div>
                 </div>
 
-                 <!-- Passwords Tab -->
-                 <div id="passwords" class="tab-content hidden">
+                <!-- Passwords Tab -->
+                <div id="passwords" class="tab-content hidden">
                     <div class="overflow-x-auto">
-                        <?php include 'displayPassword.php'; ?>
+                        <table id="passwords-table" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Course Name
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Assessment Name
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Password
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Quit Password
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -500,6 +494,37 @@
 
             // Load progression data
             loadProgressionTable(data.progressionData);
+
+            // Load passwords data
+            loadPasswordsTable();
+        }
+
+        function loadPasswordsTable() {
+            // Fetch password data from a separate endpoint
+            $.ajax({
+                url: 'get_passwords.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    const tableBody = $('#passwords-table tbody');
+                    tableBody.empty();
+
+                    data.forEach(item => {
+                        tableBody.append(`
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.course_name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessment_name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quit_password}</td>
+                </tr>
+                `);
+                    });
+                },
+                error: function () {
+                    const tableBody = $('#passwords-table tbody');
+                    tableBody.html('<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-red-500">Error loading password data</td></tr>');
+                }
+            });
         }
 
         // Function to load completed students table
