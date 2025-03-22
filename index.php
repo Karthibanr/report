@@ -2,6 +2,7 @@
 
 $host = 'localhost'; 
 $dbname = 'siet_lms'; 
+$dbReportname = 'report'; 
 $username = 'root'; 
 $password = 'password'; 
 
@@ -18,8 +19,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+        $reportPdo = new PDO("mysql:host=$host;dbname=$dbReportname", $username, $password);
+        $reportPdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $reportSql="select * from login WHERE username = :username";
+        $statement = $reportPdo->prepare($reportSql);
+        $statement -> bindParam(':username', $user);
+        $statement->execute();
+        $checkUser=$statement->fetch(PDO::FETCH_ASSOC);
+        if(!$checkUser){
+            $error = 'Unauthorized User';
+        }
+
+
         // Prepare the SQL query to fetch the user by username
-        $sql = "SELECT id, username, password FROM mdl_user WHERE username = :username";
         $sql = "SELECT id, username, password FROM sietlms_user WHERE username = :username";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':username', $user);
