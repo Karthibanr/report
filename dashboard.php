@@ -335,6 +335,7 @@
             background-color: #d1e7dd !important;
             border-left: 1px solid #ddd !important;
         }
+
         table.dataTable td {
             border-left: 0.5px solid #ddd !important;
             border-bottom: 1.5px solid #ddd !important;
@@ -342,6 +343,7 @@
     </style>
 
     <script>
+        let globalFetchedData = null;
         // Dashboard Data Renderer
         $(document).ready(function () {
             // Load initial data
@@ -390,41 +392,82 @@
                 $(this).serializeArray().forEach(item => {
                     if (item.value) formData[item.name] = item.value;
                 });
-
+                console.log('Form data:', formData);
                 // Fetch and render data with filters
-                fetchAndRenderAllData(formData);
+                filterDataWithCriteria(formData);
             });
         });
 
+        function filterDataWithCriteria(criteria) {
+            if (!globalFetchedData) return;
+
+            const fieldMapping = {
+                'course': 'programming',
+                'graduationyear': 'graduation_year',
+                // Add other mappings as needed
+            };
+
+            function filterRows(rows) {
+                return rows.filter(row => {
+                    return Object.keys(criteria).every(key => {
+                        const searchValue = criteria[key].toLowerCase().trim();
+
+                        // Get the mapped field name if it exists, or use the original
+                        const mappedKey = fieldMapping[key.replace(/\s+/g, '').toLowerCase()] || key;
+
+                        // Find matching property in row keys
+                        const rowKey = Object.keys(row).find(rk =>
+                            rk.replace(/\s+/g, '').toLowerCase() === mappedKey.replace(/\s+/g, '').toLowerCase()
+                        );
+
+                        if (!rowKey) return true; // If field not found, don't filter by this key
+                        const rowValue = (row[rowKey] || '').toString().toLowerCase();
+                        return rowValue === searchValue;
+                    });
+                });
+            }
+            const filteredCompletion = {
+                headers: globalFetchedData.course_completion.headers,
+                rows: filterRows(globalFetchedData.course_completion.rows)
+            };
+            const filteredPractice = {
+                headers: globalFetchedData.practice_scores.headers,
+                rows: filterRows(globalFetchedData.practice_scores.rows)
+            };
+            const filteredTest = {
+                headers: globalFetchedData.test_scores.headers,
+                rows: filterRows(globalFetchedData.test_scores.rows)
+            };
+            const filteredOverall = globalFetchedData.overall_scores ? {
+                headers: globalFetchedData.overall_scores.headers,
+                rows: filterRows(globalFetchedData.overall_scores.rows)
+            } : null;
+
+            renderTable('completed-students', filteredCompletion);
+            renderTable('practice-scores', filteredPractice);
+            renderTable('test-scores', filteredTest);
+            if (filteredOverall) {
+                renderTable('overall-scores', filteredOverall);
+            }
+        }
+
+
         // Function to fetch and render all data tables
-        function fetchAndRenderAllData(filters = {}) {
+        function fetchAndRenderAllData() {
             // Show loading indicator
             showLoading();
-
-            // Build query string from filters
-            const queryParams = new URLSearchParams();
-            Object.entries(filters).forEach(([key, value]) => {
-                queryParams.append(key, value);
-            });
-
-            const queryString = queryParams.toString() ? '?' + queryParams.toString() : '';
-
             // Fetch data from server
             $.ajax({
-                url: 'fetch_scores.php' + queryString,
+                url: 'fetch_scores.php',
                 type: 'GET',
                 dataType: 'json',
                 success: function (response) {
                     if (response.status === 'success') {
-                        // Render each table with its respective data
+                        globalFetchedData = response.data; // store data globally
                         renderTable('completed-students', response.data.course_completion);
                         renderTable('practice-scores', response.data.practice_scores);
                         renderTable('test-scores', response.data.test_scores);
-                        if (response.data.overall_scores) {
-                            renderTable('overall-scores', response.data.overall_scores);
-                        }
-
-                        // Hide loading indicator
+                        renderTable('overall-scores', response.data.overall_scores);
                         hideLoading();
                     } else {
                         console.error('Error in API response:', response);
@@ -440,17 +483,21 @@
             });
         }
 
-        function applyFixedColumnStriping(tableId) {
-            const fixedLeftRows = $(`#${tableId}-table_wrapper .dtfc-fixed-left tbody tr`);
-            fixedLeftRows.each(function (index) {
-                if (index % 2 === 0) {
-                    $(this).removeClass('fixed-row-odd').addClass('fixed-row-even');
-                } else {
-                    $(this).removeClass('fixed-row-even').addClass('fixed-row-odd');
-                }
-            });
+        function getDiffColor(value) {
+            // Clamp value between 0 and 10
+            const clamped = Math.min(Math.max(value, 0), 10);
+            let r, g;
+            if (clamped <= 5) {
+                // Red to Yellow
+                r = 200;
+                g = Math.round((clamped / 5) * 200);
+            } else {
+                // Yellow to Green
+                r = Math.round(200 - ((clamped - 5) / 5) * 200);
+                g = 200;
+            }
+            return `rgb(${r}, ${g}, 0)`;
         }
-
 
         // Function to render each table with DataTables
         function renderTable(tableId, tableData) {
@@ -488,11 +535,13 @@
                                     const diffValue = row[diffHeader];
                                     if (diffValue !== undefined && diffValue !== null && diffValue !== 0) {
                                         const formattedDiff = diffValue > 0 ? `+${diffValue}` : diffValue;
-                                        return `${data} (${formattedDiff})`;
+                                        const color = getDiffColor(diffValue);
+                                        return `${data} <span style="color: ${color}; font-weight: bold;">(${formattedDiff})</span>`;
                                     }
                                 }
                                 return data;
                             }
+
                         });
                     } else {
                         columnDefs.push({
@@ -542,7 +591,7 @@
                     leftColumns: 1
                 },
                 createdRow: function (row, data, dataIndex) {
-                    $(row).addClass('hover:bg-green-300'); // Tailwind hover effect for row
+                    $(row).addClass('hover:bg-green-100'); // Tailwind hover effect for row
                 },
                 initComplete: function () {
                     $('.dt-buttons').addClass('mb-4');
