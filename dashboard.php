@@ -51,6 +51,10 @@
     <script src="https://cdn.datatables.net/fixedheader/3.3.2/js/dataTables.fixedHeader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+    <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+
+
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -326,6 +330,17 @@
         </div>
     </div>
 
+    <style>
+        table.dataTable th {
+            background-color: #d1e7dd !important;
+            border-left: 1px solid #ddd !important;
+        }
+        table.dataTable td {
+            border-left: 0.5px solid #ddd !important;
+            border-bottom: 1.5px solid #ddd !important;
+        }
+    </style>
+
     <script>
         // Dashboard Data Renderer
         $(document).ready(function () {
@@ -425,6 +440,18 @@
             });
         }
 
+        function applyFixedColumnStriping(tableId) {
+            const fixedLeftRows = $(`#${tableId}-table_wrapper .dtfc-fixed-left tbody tr`);
+            fixedLeftRows.each(function (index) {
+                if (index % 2 === 0) {
+                    $(this).removeClass('fixed-row-odd').addClass('fixed-row-even');
+                } else {
+                    $(this).removeClass('fixed-row-even').addClass('fixed-row-odd');
+                }
+            });
+        }
+
+
         // Function to render each table with DataTables
         function renderTable(tableId, tableData) {
             if (!tableData || !tableData.headers || !tableData.rows) {
@@ -484,14 +511,14 @@
                     return { data: header, title: formatHeaderText(header) };
                 }),
                 columnDefs: columnDefs,
-                responsive: false, // Disable responsive to ensure horizontal scrolling works
-                scrollX: true,     // Enable horizontal scrolling
-                scrollY: '400px',  // Fixed height for vertical scrolling
+                responsive: false,
+                scrollX: true,
+                scrollY: '400px',
                 scrollCollapse: true,
-                paging: true,     // Disable pagination for scrolling
-                scroller: true,    // Enable virtual scrolling for performance
-                dom: 'Bfrtip',     // Button, filter, processing display elements
-                deferRender: true, // Improve performance with large datasets
+                paging: true,
+                scroller: true,
+                dom: 'Bfrtip',
+                deferRender: true,
                 buttons: [
                     {
                         extend: 'colvis',
@@ -510,17 +537,20 @@
                     infoEmpty: "No entries found",
                     infoFiltered: "(filtered from _MAX_ total entries)"
                 },
+                fixedHeader: true,
+                fixedColumns: {
+                    leftColumns: 1
+                },
+                createdRow: function (row, data, dataIndex) {
+                    $(row).addClass('hover:bg-green-300'); // Tailwind hover effect for row
+                },
                 initComplete: function () {
-                    // Add custom styling to buttons
                     $('.dt-buttons').addClass('mb-4');
-
-                    // Ensure horizontal scrollbar is visible when needed
                     $(`.dataTables_wrapper`).css('overflow-x', 'auto');
-
-                    // Fix header width issues
-                    this.api().columns.adjust();
+                    this.api().columns.adjust().draw();
                 }
             });
+
 
             // Add custom search input above the table
             const searchContainer = $('<div>').addClass('mb-4 flex items-center');
