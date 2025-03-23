@@ -51,6 +51,13 @@
     <script src="https://cdn.datatables.net/fixedheader/3.3.2/js/dataTables.fixedHeader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+    <!-- Add these to your existing libraries -->
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.7.0/css/select.dataTables.min.css">
+
+<script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
+
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -426,123 +433,216 @@
         }
 
         // Function to render each table with DataTables
-        function renderTable(tableId, tableData) {
-            if (!tableData || !tableData.headers || !tableData.rows) {
-                console.error(`Invalid data format for table ${tableId}`);
-                return;
+function renderTable(tableId, tableData) {
+    if (!tableData || !tableData.headers || !tableData.rows) {
+        console.error(`Invalid data format for table ${tableId}`);
+        return;
+    }
+
+    const tableContainer = $(`#${tableId}-table`);
+
+    // Destroy existing DataTable if it exists
+    if ($.fn.DataTable.isDataTable(tableContainer)) {
+        tableContainer.DataTable().destroy();
+    }
+
+    tableContainer.empty();
+
+    // Process headers to create column definitions
+    const columnDefs = [];
+    const baseHeaders = [];
+
+    tableData.headers.forEach((header, index) => {
+        if (!header.includes('_diff')) {
+            baseHeaders.push(header);
+
+            // First column fixed
+            if (index === 0) {
+                columnDefs.push({
+                    targets: 0,
+                    fixed: 'left',
+                    className: 'fw-bold'
+                });
             }
 
-            const tableContainer = $(`#${tableId}-table`);
-
-            // Destroy existing DataTable if it exists
-            if ($.fn.DataTable.isDataTable(tableContainer)) {
-                tableContainer.DataTable().destroy();
-            }
-
-            tableContainer.empty();
-
-            // Process headers to create column definitions that correctly handle diff values
-            const columnDefs = [];
-            const baseHeaders = [];
-
-            tableData.headers.forEach(header => {
-                if (!header.includes('_diff')) {
-                    baseHeaders.push(header);
-
-                    // Check if there's a corresponding diff header
-                    const diffHeader = `${header}_diff`;
-                    if (tableData.headers.includes(diffHeader)) {
-                        columnDefs.push({
-                            targets: baseHeaders.length - 1,
-                            data: header,
-                            title: formatHeaderText(header),
-                            render: function (data, type, row) {
-                                if (type === 'display') {
-                                    const diffValue = row[diffHeader];
-                                    if (diffValue !== undefined && diffValue !== null && diffValue !== 0) {
-                                        const formattedDiff = diffValue > 0 ? `+${diffValue}` : diffValue;
-                                        return `${data} (${formattedDiff})`;
-                                    }
+            // Check if there's a corresponding diff header
+            const diffHeader = `${header}_diff`;
+            if (tableData.headers.includes(diffHeader)) {
+                columnDefs.push({
+                    targets: baseHeaders.length - 1,
+                    data: header,
+                    title: formatHeaderText(header),
+                    render: function (data, type, row) {
+                        if (type === 'display') {
+                            const diffValue = parseFloat(row[diffHeader]);
+                            if (diffValue !== undefined && diffValue !== null) {
+                                // Color gradient for diff values (0-10)
+                                let color = '#dc2626'; // red for 0-3
+                                if (diffValue > 7) {
+                                    color = '#16a34a'; // green for 8-10
+                                } else if (diffValue > 3) {
+                                    color = '#ca8a04'; // yellow for 4-7
                                 }
-                                return data;
+                                
+                                const formattedDiff = diffValue === 0 ? 
+                                    `<span style="color: #6b7280">(+0)</span>` : 
+                                    `<span style="color: ${color}">(+${diffValue})</span>`;
+                                    
+                                return `${data} ${formattedDiff}`;
                             }
-                        });
-                    } else {
-                        columnDefs.push({
-                            targets: baseHeaders.length - 1,
-                            data: header,
-                            title: formatHeaderText(header)
-                        });
+                        }
+                        return data;
                     }
-                }
-            });
-
-            // Initialize DataTable with horizontal scrolling and custom rendering
-            const dataTable = tableContainer.DataTable({
-                data: tableData.rows,
-                columns: baseHeaders.map(header => {
-                    return { data: header, title: formatHeaderText(header) };
-                }),
-                columnDefs: columnDefs,
-                responsive: false, // Disable responsive to ensure horizontal scrolling works
-                scrollX: true,     // Enable horizontal scrolling
-                scrollY: '400px',  // Fixed height for vertical scrolling
-                scrollCollapse: true,
-                paging: true,     // Disable pagination for scrolling
-                scroller: true,    // Enable virtual scrolling for performance
-                dom: 'Bfrtip',     // Button, filter, processing display elements
-                deferRender: true, // Improve performance with large datasets
-                buttons: [
-                    {
-                        extend: 'colvis',
-                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
-                        text: 'Toggle Columns'
-                    },
-                    {
-                        extend: 'csv',
-                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
-                        text: 'Export CSV'
-                    }
-                ],
-                language: {
-                    search: "Filter:",
-                    info: "Showing _TOTAL_ entries",
-                    infoEmpty: "No entries found",
-                    infoFiltered: "(filtered from _MAX_ total entries)"
-                },
-                initComplete: function () {
-                    // Add custom styling to buttons
-                    $('.dt-buttons').addClass('mb-4');
-
-                    // Ensure horizontal scrollbar is visible when needed
-                    $(`.dataTables_wrapper`).css('overflow-x', 'auto');
-
-                    // Fix header width issues
-                    this.api().columns.adjust();
-                }
-            });
-
-            // Add custom search input above the table
-            const searchContainer = $('<div>').addClass('mb-4 flex items-center');
-            const searchLabel = $('<label>').addClass('mr-2 text-sm text-gray-700').text('Search:');
-            const searchInput = $('<input>')
-                .addClass('border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500')
-                .attr('type', 'search')
-                .attr('placeholder', 'Type to filter...');
-
-            searchContainer.append(searchLabel, searchInput);
-            tableContainer.before(searchContainer);
-
-            // Bind search input to DataTable
-            searchInput.on('keyup', function () {
-                dataTable.search(this.value).draw();
-            });
-
-            // Ensure columns adjust properly on window resize
-            $(window).on('resize', function () {
-                dataTable.columns.adjust();
-            });
+                });
+            } else {
+                columnDefs.push({
+                    targets: baseHeaders.length - 1,
+                    data: header,
+                    title: formatHeaderText(header)
+                });
+            }
         }
+    });
+
+    // Initialize DataTable with enhanced features
+    const dataTable = tableContainer.DataTable({
+        data: tableData.rows,
+        columns: baseHeaders.map(header => ({
+            data: header,
+            title: formatHeaderText(header)
+        })),
+        columnDefs: columnDefs,
+        responsive: true,
+        scrollX: true,
+        scrollY: '400px',
+        scrollCollapse: true,
+        paging: true,
+        scroller: true,
+        fixedColumns: {
+            left: 1 // Fix first column
+        },
+        select: {
+            style: 'multi', // Enable multi-row selection
+            selector: 'td:first-child'
+        },
+        dom: 'Bfrtip',
+        deferRender: true,
+        buttons: [
+            {
+                extend: 'colvis',
+                className: 'btn-primary',
+                text: '<i class="fas fa-columns"></i> Columns'
+            },
+            {
+                extend: 'csv',
+                className: 'btn-primary',
+                text: '<i class="fas fa-download"></i> Export'
+            },
+            {
+                extend: 'selected',
+                text: '<i class="fas fa-clipboard"></i> Copy Selected'
+            }
+        ],
+        language: {
+            search: "Filter:",
+            info: "Showing _TOTAL_ entries",
+            infoEmpty: "No entries found",
+            infoFiltered: "(filtered from _MAX_ total entries)",
+            select: {
+                rows: {
+                    _: "%d rows selected",
+                    0: "Click a row to select it",
+                    1: "1 row selected"
+                }
+            }
+        },
+        // Modern styling
+        className: 'modern-table',
+        // Striped rows
+        stripeClasses: ['bg-white', 'bg-gray-50'],
+        // Row hover effect
+        rowCallback: function(row, data, index) {
+            $(row).addClass('hover:bg-primary-50 transition-colors duration-150');
+        },
+        // Header styling
+        headerCallback: function(thead, data, start, end, display) {
+            $(thead).find('th').addClass('bg-gray-100 text-gray-700 font-semibold');
+        },
+        initComplete: function () {
+            // Add custom styling
+            $(this).closest('.dataTables_wrapper')
+                .addClass('shadow-lg rounded-lg overflow-hidden')
+                .find('.dataTables_filter input')
+                .addClass('border-2 border-gray-200 rounded-md px-3 py-1 focus:outline-none focus:border-primary-500');
+
+            // Ensure proper column sizing
+            this.api().columns.adjust();
+        }
+    });
+
+    // Add custom search functionality
+    const searchContainer = $('<div>').addClass('mb-4 flex items-center');
+    const searchLabel = $('<label>')
+        .addClass('mr-2 text-sm font-medium text-gray-700')
+        .text('Search:');
+    const searchInput = $('<input>')
+        .addClass('border-2 border-gray-200 rounded-md px-3 py-1 text-sm focus:outline-none focus:border-primary-500')
+        .attr('type', 'search')
+        .attr('placeholder', 'Type to filter...');
+
+    searchContainer.append(searchLabel, searchInput);
+    tableContainer.before(searchContainer);
+
+    // Bind search input
+    searchInput.on('keyup', function () {
+        dataTable.search(this.value).draw();
+    });
+
+    // Responsive handling
+    $(window).on('resize', function () {
+        dataTable.columns.adjust();
+    });
+}
+
+// Add custom CSS
+const style = document.createElement('style');
+style.textContent = `
+    .modern-table {
+        border-collapse: separate !important;
+        border-spacing: 0;
+    }
+    .modern-table thead th {
+        border-bottom: 2px solid #e5e7eb !important;
+        padding: 1rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
+    }
+    .modern-table tbody td {
+        padding: 1rem !important;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .btn-primary {
+        background-color: #2563eb !important;
+        color: white !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 0.375rem !important;
+        font-weight: 500 !important;
+        margin-right: 0.5rem !important;
+        border: none !important;
+    }
+    .btn-primary:hover {
+        background-color: #1d4ed8 !important;
+    }
+    .dataTables_wrapper {
+        padding: 1rem;
+        background: white;
+    }
+`;
+document.head.appendChild(style);
 
         // Format header text for better readability
         function formatHeaderText(header) {
