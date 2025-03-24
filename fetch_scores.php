@@ -365,7 +365,7 @@ function getPreviousOverallScores($conn, $previousDate) {
 // Function to get course completion statistics by department
 function getCourseCompletionByDepartment($conn) {
     // Get all courses first
-    $courseSql = "SELECT DISTINCT course_name FROM levelscore ORDER BY course_name";
+    $courseSql = "SELECT DISTINCT course_name FROM levelscore WHERE course_name LIKE '%Practice%' ORDER BY course_name";
     $courseResult = $conn->query($courseSql);
     
     if (!$courseResult) {
@@ -403,7 +403,7 @@ function getCourseCompletionByDepartment($conn) {
     $statsSql = "SELECT u.department, ls.course_name, COUNT(DISTINCT ls.username) as count_students 
                  FROM users u 
                  JOIN levelscore ls ON ls.username = u.username 
-                 WHERE ls.total > 0 
+                 WHERE ls.total = 100 AND ls.course_name LIKE '%Practice%'
                  GROUP BY u.department, ls.course_name";
     
     $statsResult = $conn->query($statsSql);
@@ -431,25 +431,26 @@ function getCourseCompletionByDepartment($conn) {
 
 // Function to process course completion statistics
 function processCompletionStats($completionData, &$data) {
+    // Add department as the first header and total_students as the second header
+    $data['course_completion']['headers'] = ['department', 'total_students'];
+    
     // Add course names to headers
     foreach ($completionData['courses'] as $course) {
         $data['course_completion']['headers'][] = $course;
     }
     
-    // Add total column
-    $data['course_completion']['headers'][] = 'total_students';
-    
     // Add rows
     foreach ($completionData['stats'] as $stat) {
-        $row = ['department' => $stat['department']];
         $totalStudents = 0;
+        $row = [];
         
         foreach ($completionData['courses'] as $course) {
             $row[$course] = $stat[$course];
             $totalStudents += $stat[$course];
         }
         
-        $row['total_students'] = $totalStudents;
+        // Add department as the first column and total students as the second column
+        $row = array_merge(['department' => $stat['department'], 'total_students' => $totalStudents], $row);
         $data['course_completion']['rows'][] = $row;
     }
 }

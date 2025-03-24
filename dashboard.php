@@ -333,7 +333,8 @@
     <style>
         table.dataTable th {
             background-color: #d1e7dd !important;
-            border-left: 1px solid #ddd !important;
+            border-left: 1.5px solid black !important;
+            text-align: center !important;
         }
 
         table.dataTable td {
@@ -392,7 +393,6 @@
                 $(this).serializeArray().forEach(item => {
                     if (item.value) formData[item.name] = item.value;
                 });
-                console.log('Form data:', formData);
                 // Fetch and render data with filters
                 filterDataWithCriteria(formData);
             });
@@ -443,12 +443,119 @@
                 rows: filterRows(globalFetchedData.overall_scores.rows)
             } : null;
 
-            renderTable('completed-students', filteredCompletion);
+            renderCourseCompletionTable(filteredCompletion);
             renderTable('practice-scores', filteredPractice);
             renderTable('test-scores', filteredTest);
             if (filteredOverall) {
                 renderTable('overall-scores', filteredOverall);
             }
+        }
+
+        function renderCourseCompletionTable(tableData) {
+            if (!tableData || !tableData.headers || !tableData.rows) {
+                console.error('Invalid data format for course completion table');
+                return;
+            }
+
+            const tableContainer = $('#completed-students-table');
+            tableContainer.empty();
+
+            const tableId = 'course-completion-table';
+            const table = $('<table>').attr('id', tableId).addClass('display nowrap w-full border-collapse min-w-max');
+            const thead = $('<thead>').addClass('bg-gray-100');
+            const tbody = $('<tbody>');
+
+            // First header row - Main categories
+            const headerRow1 = $('<tr>');
+            headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Department'));
+            headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Total Students'));
+            headerRow1.append($('<th>').attr('colspan', 32).addClass('border px-4 py-2').text('Practice'));
+            headerRow1.append($('<th>').attr('colspan', 32).addClass('border px-4 py-2').text('Test'));
+            thead.append(headerRow1);
+
+            // Second header row - Subjects
+            const headerRow2 = $('<tr>');
+            ['DB', 'DS', 'OOP', 'PS', 'DB', 'DS', 'OOP', 'PS'].forEach(subject => {
+                headerRow2.append($('<th>').attr('colspan', 8).addClass('border px-4 py-2').text(subject));
+            });
+            thead.append(headerRow2);
+
+            // Third header row - Levels
+            const headerRow3 = $('<tr>');
+            for (let i = 0; i < 8; i++) {
+                for (let j = 1; j <= 8; j++) {
+                    headerRow3.append($('<th>').addClass('border px-4 py-2').text(`L${j}`));
+                }
+            }
+            thead.append(headerRow3);
+
+            table.append(thead);
+
+            // Add row data
+            tableData.rows.forEach(rowData => {
+                const row = $('<tr>').addClass('hover:bg-gray-100');
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(rowData.department || ''));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(rowData.total_students || 0));
+
+                const categories = ['Practice', 'Test'];
+                const subjects = ['DB', 'DS', 'OOP', 'PS'];
+
+                categories.forEach(category => {
+                    subjects.forEach(subject => {
+                        for (let level = 1; level <= 8; level++) {
+                            const key = `L${level} - ${category} - ${subject}`;
+                            row.append($('<td>').addClass('border px-4 py-2 text-center').text(rowData[key] || 0));
+                        }
+                    });
+                });
+
+                tbody.append(row);
+            });
+
+            table.append(tbody);
+
+            const scrollContainer = $('<div>').addClass('overflow-x-auto max-w-full');
+            scrollContainer.append(table);
+            tableContainer.append(scrollContainer);
+
+            // Initialize DataTable with no pagination
+            setTimeout(() => {
+                $(`#${tableId}`).DataTable({
+                    scrollX: true,
+                    scrollY: '500px',
+                    scrollCollapse: true,
+                    paging: false, // ✅ No pagination
+                    fixedHeader: {
+                        header: true
+                    },
+                    fixedColumns: {
+                        left: 2
+                    },
+                    dom: 'Bfrtip',
+                    buttons: [
+                        {
+                            extend: 'colvis',
+                            className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
+                            text: 'Toggle Columns'
+                        },
+                        {
+                            extend: 'csv',
+                            className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                            text: 'Export CSV'
+                        }
+                    ],
+                    language: {
+                        search: "Filter:",
+                        info: "Showing _TOTAL_ entries",
+                        infoEmpty: "No entries found",
+                        infoFiltered: "(filtered from _MAX_ total entries)"
+                    },
+                    initComplete: function () {
+                        $('.dt-buttons').addClass('mb-4');
+                        this.api().columns.adjust().draw();
+                    }
+                });
+            }, 100);
         }
 
 
@@ -464,10 +571,10 @@
                 success: function (response) {
                     if (response.status === 'success') {
                         globalFetchedData = response.data; // store data globally
-                        renderTable('completed-students', response.data.course_completion);
                         renderTable('practice-scores', response.data.practice_scores);
                         renderTable('test-scores', response.data.test_scores);
                         renderTable('overall-scores', response.data.overall_scores);
+                        renderCourseCompletionTable(response.data.course_completion);
                         hideLoading();
                     } else {
                         console.error('Error in API response:', response);
