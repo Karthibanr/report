@@ -12,7 +12,7 @@ $query = "SELECT
                     JOIN sietlms_quiz q ON sc.id = q.course
                     LEFT JOIN sietlms_quizaccess_seb_quizsettings sq ON sq.quizid = q.id
                     WHERE q.name like 'L_ - Test%'
-                    ORDER BY q.fullname;"; 
+                    ORDER BY sc.fullname;"; 
 $result = $conn->query($query);
 
 if (!$result) {
