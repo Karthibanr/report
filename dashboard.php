@@ -744,81 +744,89 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    const tableContainer = $('#passwords-table-container');
-                    tableContainer.empty();
+                    const tableBody = $('#passwords-table tbody');
+                    tableBody.empty();
 
-                    // Create table structure
-                    const table = $(`
-                <table id="passwords-table" class="display nowrap w-full border-collapse min-w-max">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border px-4 py-2">Course Name</th>
-                            <th class="border px-4 py-2">Assessment Name</th>
-                            <th class="border px-4 py-2">Password</th>
-                            <th class="border px-4 py-2">Quit Password</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            `);
-
-                    tableContainer.append(table);
-
-                    const tableBody = table.find('tbody');
+                    // Populate the table with data
                     data.forEach(item => {
                         tableBody.append(`
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.courseName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessmentName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.Password}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.QuitPassword}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.course_name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessment_name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quit_password}</td>
                     </tr>
                 `);
                     });
 
-                    // Initialize DataTable with export buttons
-                    setTimeout(() => {
-                        $('#passwords-table').DataTable({
-                            scrollX: true,
-                            paging: false,
-                            dom: 'Bfrtip',
-                            buttons: [
-                                {
-                                    extend: 'csv',
-                                    className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
-                                    text: 'Export CSV'
-                                },
-                                {
-                                    extend: 'excel',
-                                    className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
-                                    text: 'Export Excel'
-                                },
-                                {
-                                    extend: 'print',
-                                    className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
-                                    text: 'Print Table'
-                                }
-                            ],
-                            language: {
-                                search: "Filter:",
-                                info: "Showing _TOTAL_ entries",
-                                infoEmpty: "No entries found",
-                                infoFiltered: "(filtered from _MAX_ total entries)"
-                            },
-                            initComplete: function () {
-                                $('.dt-buttons').addClass('mb-4');
-                                this.api().columns.adjust().draw();
-                            }
+                    // Add export button if it doesn't exist
+                    if ($('#export-excel-btn').length === 0) {
+                        $('#passwords-table').before(`
+                    <div class="mb-4">
+                        <button id="export-excel-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Export to Excel
+                        </button>
+                    </div>
+                `);
+
+                        // Add event listener to the export button
+                        $('#export-excel-btn').on('click', function () {
+                            exportToExcel(data);
                         });
-                    }, 100);
+                    }
                 },
                 error: function () {
-                    const tableContainer = $('#passwords-table-container');
-                    tableContainer.html('<p class="text-center text-sm text-red-500">Error loading password data</p>');
+                    const tableBody = $('#passwords-table tbody');
+                    tableBody.html('<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-red-500">Error loading password data</td></tr>');
                 }
             });
         }
 
+        // Function to export data to Excel
+        function exportToExcel(data) {
+            // Create headers for the Excel file
+            const headers = ['Course Name', 'Assessment Name', 'Password', 'Quit Password'];
+
+            // Create CSV content
+            let csvContent = headers.join(',') + '\n';
+
+            // Add data rows
+            data.forEach(item => {
+                // Properly escape fields that might contain commas
+                const escapedRow = [
+                    escapeCsvField(item.course_name),
+                    escapeCsvField(item.assessment_name),
+                    escapeCsvField(item.password),
+                    escapeCsvField(item.quit_password)
+                ];
+                csvContent += escapedRow.join(',') + '\n';
+            });
+
+            // Create a Blob with the CSV content
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // Create a download link and trigger the download
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'passwords_data.csv');
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Helper function to escape CSV fields
+        function escapeCsvField(field) {
+            // If the field contains commas, quotes, or newlines, wrap it in quotes
+            if (field && (field.includes(',') || field.includes('"') || field.includes('\n'))) {
+                // Replace any existing quotes with double quotes
+                return '"' + field.replace(/"/g, '""') + '"';
+            }
+            return field || '';
+        }
 
         // Helper functions for UI feedback
         function showLoading() {
