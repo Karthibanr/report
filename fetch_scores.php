@@ -60,7 +60,6 @@ function getScoresData() {
     // Get previous date's practice scores for diff calculation
     $previousPracticeSql = "SELECT ls.username, ls.course_name, ls.total 
                            FROM levelScore ls
-                           FROM levelScore ls
                            WHERE course_name NOT LIKE '%Test%' 
                            AND ls.date = '$previousDate'";
     
