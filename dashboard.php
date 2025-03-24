@@ -755,10 +755,10 @@
                     data.forEach(item => {
                         tableBody.append(`
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.course_name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessment_name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quit_password}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.courseName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessmentName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.Password}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.QuitPassword}</td>
                     </tr>
                 `);
                     });

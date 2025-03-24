@@ -1,6 +1,8 @@
 <?php
 include 'connection.php';
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('max_execution_time', '0');
 // Main function to orchestrate the process
 function getScoresData() {
     global $conn;
@@ -41,7 +43,7 @@ function getScoresData() {
     // Get practice scores (non-test courses) for latest date
     $practiceSql = "SELECT u.*, ls.course_name, ls.total, ls.date
                     FROM users u
-                    JOIN levelscore ls ON ls.username = u.username
+                    JOIN levelScore ls ON ls.username = u.username
                     WHERE course_name NOT LIKE '%Test%' 
                     AND ls.date = '$latestDate'";
 
@@ -57,7 +59,7 @@ function getScoresData() {
 
     // Get previous date's practice scores for diff calculation
     $previousPracticeSql = "SELECT ls.username, ls.course_name, ls.total 
-                           FROM levelscore ls
+                           FROM levelScore ls
                            WHERE course_name NOT LIKE '%Test%' 
                            AND ls.date = '$previousDate'";
     
@@ -82,7 +84,7 @@ function getScoresData() {
     // Get test scores (only test courses) for latest date
     $testSql = "SELECT u.*, ls.course_name, ls.total, ls.date
                 FROM users u
-                JOIN levelscore ls ON ls.username = u.username
+                JOIN levelScore ls ON ls.username = u.username
                 WHERE course_name LIKE '%Test%'
                 AND ls.date = '$latestDate'";
 
@@ -98,7 +100,7 @@ function getScoresData() {
     
     // Get previous date's test scores for diff calculation
     $previousTestSql = "SELECT ls.username, ls.course_name, ls.total 
-                        FROM levelscore ls
+                        FROM levelScore ls
                         WHERE course_name LIKE '%Test%' 
                         AND ls.date = '$previousDate'";
     
@@ -177,7 +179,7 @@ function getScoresData() {
 
 // Function to get the latest date from the database
 function getLatestDate($conn) {
-    $sql = "SELECT MAX(date) as latest_date FROM levelscore";
+    $sql = "SELECT MAX(date) as latest_date FROM levelScore";
     $result = $conn->query($sql);
     
     if (!$result) {
@@ -190,7 +192,7 @@ function getLatestDate($conn) {
 
 // Function to get the previous date from the database
 function getPreviousDate($conn, $latestDate) {
-    $sql = "SELECT MAX(date) as previous_date FROM levelscore WHERE date < '$latestDate'";
+    $sql = "SELECT MAX(date) as previous_date FROM levelScore WHERE date < '$latestDate'";
     $result = $conn->query($sql);
     
     if (!$result) {
@@ -323,7 +325,7 @@ function processArrayResultsWithDiff($rows, $dataKey, &$data, $baseColumns, $pre
 function getOverallScoresWithDate($conn, $date) {
     $overallSql = "SELECT u.*, cs.course_name, cs.total
                    FROM users u
-                   JOIN categoryscore cs ON cs.username = u.username
+                   JOIN categoryScore cs ON cs.username = u.username
                    WHERE cs.date = '$date'";
     
     $overallResult = $conn->query($overallSql);
@@ -344,7 +346,7 @@ function getOverallScoresWithDate($conn, $date) {
 // Function to get previous overall scores
 function getPreviousOverallScores($conn, $previousDate) {
     $sql = "SELECT cs.username, cs.course_name, cs.total
-            FROM categoryscore cs
+            FROM categoryScore cs
             WHERE cs.date = '$previousDate'";
     
     $result = $conn->query($sql);
@@ -365,7 +367,7 @@ function getPreviousOverallScores($conn, $previousDate) {
 // Function to get course completion statistics by department
 function getCourseCompletionByDepartment($conn) {
     // Get all courses first
-    $courseSql = "SELECT DISTINCT course_name FROM levelscore WHERE course_name LIKE '%Practice%' ORDER BY course_name";
+    $courseSql = "SELECT DISTINCT course_name FROM levelScore WHERE course_name LIKE '%Practice%' ORDER BY course_name";
     $courseResult = $conn->query($courseSql);
     
     if (!$courseResult) {
@@ -402,7 +404,7 @@ function getCourseCompletionByDepartment($conn) {
     // Get completion counts for each department and course
     $statsSql = "SELECT u.department, ls.course_name, COUNT(DISTINCT ls.username) as count_students 
                  FROM users u 
-                 JOIN levelscore ls ON ls.username = u.username 
+                 JOIN levelScore ls ON ls.username = u.username 
                  WHERE ls.total = 100 AND ls.course_name LIKE '%Practice%'
                  GROUP BY u.department, ls.course_name";
     

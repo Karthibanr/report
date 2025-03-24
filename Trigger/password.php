@@ -5,9 +5,9 @@ $host = 'localhost';
 $dbname = 'siet_lms'; 
 $username = 'root'; 
 $password = 'password'; 
-$reportDB='report';
+// $reportDB='report';
         $conn = new mysqli($host, $username, $password, $dbname);
-        $connReport= new mysqli($host, $username, $password, $reportDB);
+        // $connReport= new mysqli($host, $username, $password, $reportDB);
         $courseSql="SELECT 
                         sc.fullname AS courseName, 
                         q.name AS assessmentName, 
@@ -31,25 +31,25 @@ $reportDB='report';
 
                 $originalUpdateResult=$conn->query($originalUpdateSql);
 
-                $checkSql="select * from password_Details
-                            where course_name='".$row['courseName']."' 
-                            and assessment_name='".$row['assessmentName']."';";
-                // echo $checkSql;
-                $checkResult=$connReport->query($checkSql);
-                if($checkResult->num_rows>0){
-                    $updateSQL="update password_Details set password=".$newPassword." 
-                            where course_name='".$row['courseName']."' 
-                            and assessment_name='".$row['assessmentName']."';";
-                    // echo $updateSQL;
-                    $updateResult=$connReport->query($updateSQL);
-                }
-                else{
-                    $insertSql="insert into password_Details values('".$row['courseName']."','".$row['assessmentName']."','".$newPassword."','".$row['QuitPassword']."');";
-                    // echo $insertSql;
-                    $insertResult=$connReport->query($insertSql);
-                }
+                // $checkSql="select * from password_Details
+                //             where course_name='".$row['courseName']."' 
+                //             and assessment_name='".$row['assessmentName']."';";
+                // // echo $checkSql;
+                // $checkResult=$connReport->query($checkSql);
+                // if($checkResult->num_rows>0){
+                //     $updateSQL="update password_Details set password=".$newPassword." 
+                //             where course_name='".$row['courseName']."' 
+                //             and assessment_name='".$row['assessmentName']."';";
+                //     // echo $updateSQL;
+                //     $updateResult=$connReport->query($updateSQL);
+                // }
+                // else{
+                //     $insertSql="insert into password_Details values('".$row['courseName']."','".$row['assessmentName']."','".$newPassword."','".$row['QuitPassword']."');";
+                //     // echo $insertSql;
+                //     $insertResult=$connReport->query($insertSql);
+                // }
             }
         }
         $conn->close();
-        $connReport->close();
+        // $connReport->close();
 ?>
