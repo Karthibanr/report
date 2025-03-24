@@ -759,13 +759,8 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.courseName}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessmentName}</td>
-<<<<<<< HEAD
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.Password}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.QuitPassword}</td>
-=======
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quitPassword}</td>
->>>>>>> b383c737e84b7febffc86808cc62b8bb0f483157
                     </tr>
                 `);
                     });
