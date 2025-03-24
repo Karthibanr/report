@@ -765,9 +765,14 @@
                 `);
                     });
 
+                    // Add a container for the export buttons above the table
+                    if ($('#datatable-buttons').length === 0) {
+                        $('#passwords-table').before('<div id="datatable-buttons" class="mb-4 flex"></div>');
+                    }
+
                     // Initialize DataTable with export buttons
                     $('#passwords-table').DataTable({
-                        dom: 'Bfrtip',  // Positions the buttons at the top
+                        dom: '<"flex justify-between items-center mb-4"<"flex-1"f><"flex"B>>rt<"flex justify-between"<"flex-1"i><"flex"p>>',
                         buttons: [
                             {
                                 extend: 'excel',
@@ -796,8 +801,17 @@
                             info: "Showing _START_ to _END_ of _TOTAL_ entries",
                             infoEmpty: "Showing 0 to 0 of 0 entries",
                             infoFiltered: "(filtered from _MAX_ total entries)"
+                        },
+                        // Preserve your Tailwind styling
+                        drawCallback: function () {
+                            // Ensure Tailwind classes are preserved after DataTable initialization
+                            $('#passwords-table thead th').addClass('px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider');
+                            $('#passwords-table tbody td').addClass('px-6 py-4 whitespace-nowrap text-sm text-gray-500');
                         }
                     });
+
+                    // Move buttons into custom container for better positioning
+                    $('.dt-buttons').appendTo('#datatable-buttons').removeClass('dt-buttons').addClass('flex');
                 },
                 error: function () {
                     const tableBody = $('#passwords-table tbody');
@@ -806,7 +820,8 @@
             });
         }
 
-    
+
+
         // Helper functions for UI feedback
         function showLoading() {
             // Add a loading indicator to the active tab
