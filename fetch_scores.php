@@ -44,8 +44,7 @@ function getScoresData() {
     $practiceSql = "SELECT u.*, ls.course_name, ls.total, ls.date
                     FROM users u
                     JOIN levelScore ls ON ls.username = u.username
-                    JOIN levelScore ls ON ls.username = u.username
-                    WHERE course_name NOT LIKE '%Test%' 
+                    WHERE ls.course_name NOT LIKE '%Test%' 
                     AND ls.date = '$latestDate'";
 
     // Execute query

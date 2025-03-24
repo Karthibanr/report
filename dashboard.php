@@ -784,9 +784,9 @@
                                 }
                             },
                             {
-                                extend: 'csv',
-                                text: 'Export to CSV',
-                                className: 'px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+                                extend: 'pdf',
+                                text: 'Export to PDF',
+                                className: 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500',
                                 title: 'Passwords Data',
                                 exportOptions: {
                                     columns: ':visible'
