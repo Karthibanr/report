@@ -465,24 +465,22 @@
             const thead = $('<thead>').addClass('bg-gray-100');
             const tbody = $('<tbody>');
 
-            // First header row - Main categories
+            // First header row - Main categories (only Practice)
             const headerRow1 = $('<tr>');
             headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Department'));
             headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Total Students'));
-            headerRow1.append($('<th>').attr('colspan', 32).addClass('border px-4 py-2').text('Practice'));
-            headerRow1.append($('<th>').attr('colspan', 32).addClass('border px-4 py-2').text('Test'));
             thead.append(headerRow1);
 
-            // Second header row - Subjects
+            // Second header row - Subjects (only once)
             const headerRow2 = $('<tr>');
-            ['DB', 'DS', 'OOP', 'PS', 'DB', 'DS', 'OOP', 'PS'].forEach(subject => {
+            ['DB', 'DS', 'OOP', 'PS'].forEach(subject => {
                 headerRow2.append($('<th>').attr('colspan', 8).addClass('border px-4 py-2').text(subject));
             });
             thead.append(headerRow2);
 
             // Third header row - Levels
             const headerRow3 = $('<tr>');
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 4; i++) { // Only 4 subjects
                 for (let j = 1; j <= 8; j++) {
                     headerRow3.append($('<th>').addClass('border px-4 py-2').text(`L${j}`));
                 }
@@ -491,22 +489,20 @@
 
             table.append(thead);
 
-            // Add row data
+            // Add row data for only Practice
             tableData.rows.forEach(rowData => {
                 const row = $('<tr>').addClass('hover:bg-gray-100');
                 row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(rowData.department || ''));
                 row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(rowData.total_students || 0));
 
-                const categories = ['Practice', 'Test'];
+                const category = 'Practice';
                 const subjects = ['DB', 'DS', 'OOP', 'PS'];
 
-                categories.forEach(category => {
-                    subjects.forEach(subject => {
-                        for (let level = 1; level <= 8; level++) {
-                            const key = `L${level} - ${category} - ${subject}`;
-                            row.append($('<td>').addClass('border px-4 py-2 text-center').text(rowData[key] || 0));
-                        }
-                    });
+                subjects.forEach(subject => {
+                    for (let level = 1; level <= 8; level++) {
+                        const key = `L${level} - ${category} - ${subject}`;
+                        row.append($('<td>').addClass('border px-4 py-2 text-center').text(rowData[key] || 0));
+                    }
                 });
 
                 tbody.append(row);
@@ -524,7 +520,7 @@
                     scrollX: true,
                     scrollY: '500px',
                     scrollCollapse: true,
-                    paging: false, // ✅ No pagination
+                    paging: false,
                     fixedHeader: {
                         header: true
                     },
@@ -557,7 +553,6 @@
                 });
             }, 100);
         }
-
 
         // Function to fetch and render all data tables
         function fetchAndRenderAllData() {
@@ -749,26 +744,81 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    const tableBody = $('#passwords-table tbody');
-                    tableBody.empty();
+                    const tableContainer = $('#passwords-table-container');
+                    tableContainer.empty();
 
+                    // Create table structure
+                    const table = $(`
+                <table id="passwords-table" class="display nowrap w-full border-collapse min-w-max">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border px-4 py-2">Course Name</th>
+                            <th class="border px-4 py-2">Assessment Name</th>
+                            <th class="border px-4 py-2">Password</th>
+                            <th class="border px-4 py-2">Quit Password</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            `);
+
+                    tableContainer.append(table);
+
+                    const tableBody = table.find('tbody');
                     data.forEach(item => {
                         tableBody.append(`
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.course_name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessment_name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quit_password}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">${item.courseName}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">${item.assessmentName}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">${item.password}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">${item.quitPassword}</td>
                     </tr>
                 `);
                     });
+
+                    // Initialize DataTable with export buttons
+                    setTimeout(() => {
+                        $('#passwords-table').DataTable({
+                            scrollX: true,
+                            paging: false,
+                            dom: 'Bfrtip',
+                            buttons: [
+                                {
+                                    extend: 'csv',
+                                    className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                                    text: 'Export CSV'
+                                },
+                                {
+                                    extend: 'excel',
+                                    className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                                    text: 'Export Excel'
+                                },
+                                {
+                                    extend: 'print',
+                                    className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                                    text: 'Print Table'
+                                }
+                            ],
+                            language: {
+                                search: "Filter:",
+                                info: "Showing _TOTAL_ entries",
+                                infoEmpty: "No entries found",
+                                infoFiltered: "(filtered from _MAX_ total entries)"
+                            },
+                            initComplete: function () {
+                                $('.dt-buttons').addClass('mb-4');
+                                this.api().columns.adjust().draw();
+                            }
+                        });
+                    }, 100);
                 },
                 error: function () {
-                    const tableBody = $('#passwords-table tbody');
-                    tableBody.html('<tr><td colspan="4" class="px-6 py-4 text-center text-sm text-red-500">Error loading password data</td></tr>');
+                    const tableContainer = $('#passwords-table-container');
+                    tableContainer.html('<p class="text-center text-sm text-red-500">Error loading password data</p>');
                 }
             });
         }
+
 
         // Helper functions for UI feedback
         function showLoading() {
