@@ -744,6 +744,12 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
+                    // Check if DataTable already exists and destroy it before reinitializing
+                    if ($.fn.DataTable.isDataTable('#passwords-table')) {
+                        $('#passwords-table').DataTable().destroy();
+                    }
+
+                    // Clear the table body
                     const tableBody = $('#passwords-table tbody');
                     tableBody.empty();
 
@@ -753,27 +759,64 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.courseName}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.assessmentName}</td>
+<<<<<<< HEAD
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.Password}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.QuitPassword}</td>
+=======
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.password}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quitPassword}</td>
+>>>>>>> b383c737e84b7febffc86808cc62b8bb0f483157
                     </tr>
                 `);
                     });
 
-                    // Add export button if it doesn't exist
-                    if ($('#export-excel-btn').length === 0) {
-                        $('#passwords-table').before(`
-                    <div class="mb-4">
-                        <button id="export-excel-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                            Export to Excel
-                        </button>
-                    </div>
-                `);
-
-                        // Add event listener to the export button
-                        $('#export-excel-btn').on('click', function () {
-                            exportToExcel(data);
-                        });
+                    // Add a container for the export buttons above the table
+                    if ($('#datatable-buttons').length === 0) {
+                        $('#passwords-table').before('<div id="datatable-buttons" class="mb-4 flex"></div>');
                     }
+
+                    // Initialize DataTable with export buttons
+                    $('#passwords-table').DataTable({
+                        dom: '<"flex justify-between items-center mb-4"<"flex-1"f><"flex"B>>rt<"flex justify-between"<"flex-1"i><"flex"p>>',
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                text: 'Export to Excel',
+                                className: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2',
+                                title: 'Passwords Data',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            },
+                            {
+                                extend: 'csv',
+                                text: 'Export to CSV',
+                                className: 'px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+                                title: 'Passwords Data',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }
+                        ],
+                        pageLength: 25,
+                        responsive: true,
+                        language: {
+                            search: "Search:",
+                            lengthMenu: "Show _MENU_ entries",
+                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                            infoEmpty: "Showing 0 to 0 of 0 entries",
+                            infoFiltered: "(filtered from _MAX_ total entries)"
+                        },
+                        // Preserve your Tailwind styling
+                        drawCallback: function () {
+                            // Ensure Tailwind classes are preserved after DataTable initialization
+                            $('#passwords-table thead th').addClass('px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider');
+                            $('#passwords-table tbody td').addClass('px-6 py-4 whitespace-nowrap text-sm text-gray-500');
+                        }
+                    });
+
+                    // Move buttons into custom container for better positioning
+                    $('.dt-buttons').appendTo('#datatable-buttons').removeClass('dt-buttons').addClass('flex');
                 },
                 error: function () {
                     const tableBody = $('#passwords-table tbody');
@@ -782,51 +825,7 @@
             });
         }
 
-        // Function to export data to Excel
-        function exportToExcel(data) {
-            // Create headers for the Excel file
-            const headers = ['Course Name', 'Assessment Name', 'Password', 'Quit Password'];
 
-            // Create CSV content
-            let csvContent = headers.join(',') + '\n';
-
-            // Add data rows
-            data.forEach(item => {
-                // Properly escape fields that might contain commas
-                const escapedRow = [
-                    escapeCsvField(item.course_name),
-                    escapeCsvField(item.assessment_name),
-                    escapeCsvField(item.password),
-                    escapeCsvField(item.quit_password)
-                ];
-                csvContent += escapedRow.join(',') + '\n';
-            });
-
-            // Create a Blob with the CSV content
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-            // Create a download link and trigger the download
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'passwords_data.csv');
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Helper function to escape CSV fields
-        function escapeCsvField(field) {
-            // If the field contains commas, quotes, or newlines, wrap it in quotes
-            if (field && (field.includes(',') || field.includes('"') || field.includes('\n'))) {
-                // Replace any existing quotes with double quotes
-                return '"' + field.replace(/"/g, '""') + '"';
-            }
-            return field || '';
-        }
 
         // Helper functions for UI feedback
         function showLoading() {
