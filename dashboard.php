@@ -482,7 +482,7 @@
 
             // Second header row - Subjects (only once)
             const headerRow2 = $('<tr>');
-            ['DB', 'DS', 'OOP', 'PS'].forEach(subject => {
+            ['PS', 'DB', 'DS', 'OOP'].forEach(subject => {
                 headerRow2.append($('<th>').attr('colspan', 8).addClass('border px-4 py-2').text(subject));
             });
             thead.append(headerRow2);
@@ -519,7 +519,7 @@
                 }
 
                 // Process each subject and level
-                const subjects = ['DB', 'DS', 'OOP', 'PS'];
+                const subjects = ['PS', 'DB', 'DS', 'OOP'];
                 subjects.forEach(subject => {
                     for (let level = 1; level <= 8; level++) {
                         const key = `L${level} - Practice - ${subject}`;
@@ -542,7 +542,7 @@
                 row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(rowData.department));
                 row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(departmentTotals[rowData.department] || 0));
 
-                const subjects = ['DB', 'DS', 'OOP', 'PS'];
+                const subjects = ['PS', 'DB', 'DS', 'OOP'];
                 subjects.forEach(subject => {
                     for (let level = 1; level <= 8; level++) {
                         const key = `L${level} - Practice - ${subject}`;
@@ -573,7 +573,7 @@
                         left: 2
                     },
                     columnDefs: [
-                        { targets: [6, 7, 8, 9, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26], visible: false }
+                        { targets: [14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33], visible: false }
                     ],
                     autoWidth: false,
                     dom: 'Bfrtip',
