@@ -142,7 +142,7 @@ if ($result->num_rows > 0) {
         // Practice Problem Solving couse level 1 to 8
         foreach ($ppscourses as $course) {
             $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -187,7 +187,7 @@ if ($result->num_rows > 0) {
         // Practice  DS Course
         foreach ($pdscourses as $course) {
             $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -231,7 +231,7 @@ if ($result->num_rows > 0) {
         // Practice  DB Course
 foreach ($pdbcourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade)  AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -275,7 +275,7 @@ foreach ($pdbcourses as $course) {
         // Practice  OOPS Course
 foreach ($poopcourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username,SUM(grade)  AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -319,7 +319,7 @@ foreach ($poopcourses as $course) {
         // Test PS Course
 foreach ($tpscourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade)  AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -364,7 +364,7 @@ foreach ($tpscourses as $course) {
         // Test  DS Course
 foreach ($tdscourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -409,7 +409,7 @@ foreach ($tdscourses as $course) {
         // Test  DB Course
 foreach ($tdbcourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -454,7 +454,7 @@ foreach ($tdbcourses as $course) {
         // Test  OOPS Course
 foreach ($toopcourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
+            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
