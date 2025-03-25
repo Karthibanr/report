@@ -351,7 +351,6 @@
             loadPasswordsTable();
             fetchAndRenderAllData();
 
-            // Tab functionality
             $('.tab-btn').click(function () {
                 // Remove active class from all buttons
                 $('.tab-btn').removeClass('text-primary-600 border-primary-500').addClass('text-gray-500 border-transparent');
@@ -361,8 +360,18 @@
                 // Hide all tab contents
                 $('.tab-content').addClass('hidden');
                 // Show the selected tab content
-                $('#' + $(this).data('tab')).removeClass('hidden');
+                const selectedTab = $(this).data('tab');
+                $('#' + selectedTab).removeClass('hidden');
+
+                // Check if the tab has a DataTable and adjust column widths
+                setTimeout(() => {
+                    const tableId = `#${selectedTab}-table`;
+                    if ($.fn.DataTable.isDataTable(tableId)) {
+                        $(tableId).DataTable().columns.adjust().draw();
+                    }
+                }, 100); // short delay allows DOM to finish rendering
             });
+
 
             // Modal functionality
             $('#infoButton').click(function () {
@@ -770,16 +779,16 @@
 
         // Format header text for better readability
         function formatHeaderText(header) {
-            // Replace hyphens with spaces and capitalize first letter of each word
+            // Replace hyphens with spaces, swap words, and capitalize first letter of each word
             return header
-                .replace(/_/g, ' ')
-                .replace(/-/g, ' ')
-                .replace(/Practice/, ' ')
-                .replace(/Test/, ' ')
-                
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
+            .replace(/_/g, ' ')
+            .replace(/-/g, ' ')
+            .replace(/Practice/, ' ')
+            .replace(/Test/, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .reverse() // Swap words by reversing the array
+            .join(' ');
         }
 
         // Function to load passwords table
