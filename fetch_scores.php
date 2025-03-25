@@ -3,6 +3,7 @@ include 'connection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('max_execution_time', '0');
+
 // Main function to orchestrate the process
 function getScoresData() {
     global $conn;
@@ -19,10 +20,6 @@ function getScoresData() {
         ],
         "overall_scores" => [
             "headers" => [],
-            "rows" => []
-        ],
-        "course_completion" => [
-            "headers" => ["department"],
             "rows" => []
         ]
     ];
@@ -153,19 +150,6 @@ function getScoresData() {
     
     // Calculate rankings for overall scores
     calculateRankings($data);
-    
-    // Get course completion statistics by department
-    $courseCompletionResult = getCourseCompletionByDepartment($conn);
-    
-    if (isset($courseCompletionResult["error"])) {
-        return [
-            "status" => "error",
-            "message" => $courseCompletionResult["error"]
-        ];
-    }
-    
-    // Process course completion statistics
-    processCompletionStats($courseCompletionResult, $data);
 
     return [
         "status" => "success",
@@ -362,98 +346,6 @@ function getPreviousOverallScores($conn, $previousDate) {
     }
     
     return $scores;
-}
-
-// Function to get course completion statistics by department
-function getCourseCompletionByDepartment($conn) {
-    // Get all courses first
-    $courseSql = "SELECT DISTINCT course_name FROM levelScore WHERE course_name LIKE '%Practice%' ORDER BY course_name";
-    $courseResult = $conn->query($courseSql);
-    
-    if (!$courseResult) {
-        return ["error" => "Course query failed: " . $conn->error];
-    }
-    
-    $courses = [];
-    while ($row = $courseResult->fetch_assoc()) {
-        $courses[] = $row['course_name'];
-    }
-    
-    // Get all departments
-    $deptSql = "SELECT DISTINCT department FROM users ORDER BY department";
-    $deptResult = $conn->query($deptSql);
-    
-    if (!$deptResult) {
-        return ["error" => "Department query failed: " . $conn->error];
-    }
-    
-    $departments = [];
-    while ($row = $deptResult->fetch_assoc()) {
-        $departments[] = $row['department'];
-    }
-    
-    // Initialize completion statistics
-    $completionStats = [];
-    foreach ($departments as $dept) {
-        $completionStats[$dept] = ['department' => $dept];
-        foreach ($courses as $course) {
-            $completionStats[$dept][$course] = 0;
-        }
-    }
-    
-    // Get completion counts for each department and course
-    $statsSql = "SELECT u.department, ls.course_name, COUNT(DISTINCT ls.username) as count_students 
-                 FROM users u 
-                 JOIN levelScore ls ON ls.username = u.username 
-                 WHERE ls.total > 0 AND course_name LIKE '%Practice%'
-                 GROUP BY u.department, ls.course_name";
-    
-    $statsResult = $conn->query($statsSql);
-    
-    if (!$statsResult) {
-        return ["error" => "Completion statistics query failed: " . $conn->error];
-    }
-    
-    // Populate completion statistics
-    while ($row = $statsResult->fetch_assoc()) {
-        $dept = $row['department'];
-        $course = $row['course_name'];
-        $count = $row['count_students'];
-        
-        if (isset($completionStats[$dept])) {
-            $completionStats[$dept][$course] = $count;
-        }
-    }
-    
-    return [
-        'courses' => $courses,
-        'stats' => array_values($completionStats)
-    ];
-}
-
-// Function to process course completion statistics
-function processCompletionStats($completionData, &$data) {
-    // Add course names to headers
-    foreach ($completionData['courses'] as $course) {
-        $data['course_completion']['headers'][] = $course;
-    }
-    
-    // Add total column
-    $data['course_completion']['headers'][] = 'total_students';
-    
-    // Add rows
-    foreach ($completionData['stats'] as $stat) {
-        $row = ['department' => $stat['department']];
-        $totalStudents = 0;
-        
-        foreach ($completionData['courses'] as $course) {
-            $row[$course] = $stat[$course];
-            $totalStudents += $stat[$course];
-        }
-        
-        $row['total_students'] = $totalStudents;
-        $data['course_completion']['rows'][] = $row;
-    }
 }
 
 // Function to calculate rankings for overall scores

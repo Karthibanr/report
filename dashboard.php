@@ -427,8 +427,8 @@
                 });
             }
             const filteredCompletion = {
-                headers: globalFetchedData.course_completion.headers,
-                rows: filterRows(globalFetchedData.course_completion.rows)
+                headers: globalFetchedData.practice_scores.headers,
+                rows: filterRows(globalFetchedData.practice_scores.rows)
             };
             const filteredPractice = {
                 headers: globalFetchedData.practice_scores.headers,
@@ -489,18 +489,54 @@
 
             table.append(thead);
 
-            // Add row data for only Practice
+            // Collect department totals and aggregate data
+            const departmentTotals = {};
+            const aggregatedData = {};
+
+            // Process rows to aggregate data
             tableData.rows.forEach(rowData => {
-                const row = $('<tr>').addClass('hover:bg-gray-100');
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(rowData.department || ''));
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(rowData.total_students || 0));
+                const dept = rowData.department || 'Unknown';
 
-                const category = 'Practice';
+                // Count total students per department
+                if (!departmentTotals[dept]) {
+                    departmentTotals[dept] = 1;
+                } else {
+                    departmentTotals[dept]++;
+                }
+
+                // Initialize department in aggregatedData if not exists
+                if (!aggregatedData[dept]) {
+                    aggregatedData[dept] = { department: dept };
+                }
+
+                // Process each subject and level
                 const subjects = ['DB', 'DS', 'OOP', 'PS'];
-
                 subjects.forEach(subject => {
                     for (let level = 1; level <= 8; level++) {
-                        const key = `L${level} - ${category} - ${subject}`;
+                        const key = `L${level} - Practice - ${subject}`;
+
+                        // Only count non-zero values
+                        if (rowData[key] && parseFloat(rowData[key]) > 0) {
+                            // Initialize the key if not exists
+                            if (!aggregatedData[dept][key]) {
+                                aggregatedData[dept][key] = 0;
+                            }
+                            aggregatedData[dept][key]++;
+                        }
+                    }
+                });
+            });
+
+            // Render rows
+            Object.values(aggregatedData).forEach(rowData => {
+                const row = $('<tr>').addClass('hover:bg-gray-100');
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(rowData.department));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(departmentTotals[rowData.department] || 0));
+
+                const subjects = ['DB', 'DS', 'OOP', 'PS'];
+                subjects.forEach(subject => {
+                    for (let level = 1; level <= 8; level++) {
+                        const key = `L${level} - Practice - ${subject}`;
                         row.append($('<td>').addClass('border px-4 py-2 text-center').text(rowData[key] || 0));
                     }
                 });
@@ -527,6 +563,10 @@
                     fixedColumns: {
                         left: 2
                     },
+                    columnDefs: [
+                        { targets: [6, 7, 8, 9, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26], visible: false }
+                    ],
+                    autoWidth: false,
                     dom: 'Bfrtip',
                     buttons: [
                         {
@@ -554,7 +594,6 @@
             }, 100);
         }
 
-        // Function to fetch and render all data tables
         function fetchAndRenderAllData() {
             // Show loading indicator
             showLoading();
@@ -569,7 +608,8 @@
                         renderTable('practice-scores', response.data.practice_scores);
                         renderTable('test-scores', response.data.test_scores);
                         renderTable('overall-scores', response.data.overall_scores);
-                        renderCourseCompletionTable(response.data.course_completion);
+                        // Pass practice_scores instead of course_completion
+                        renderCourseCompletionTable(response.data.practice_scores);
                         hideLoading();
                     } else {
                         console.error('Error in API response:', response);
@@ -692,6 +732,9 @@
                 fixedColumns: {
                     leftColumns: 1
                 },
+                columnDefs: [
+                    { targets: [1, 2, 3, 4, 5, 6], visible: false }
+                ],
                 createdRow: function (row, data, dataIndex) {
                     $(row).addClass('hover:bg-green-100'); // Tailwind hover effect for row
                 },
@@ -819,8 +862,6 @@
                 }
             });
         }
-
-
 
         // Helper functions for UI feedback
         function showLoading() {
