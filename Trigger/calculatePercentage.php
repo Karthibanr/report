@@ -57,13 +57,13 @@
     $result = $conn->query($studentListSql);
 
     $ppscourses = ["L1 - Practice - PS", "L2 - Practice - PS", "L3 - Practice - PS", "L4 - Practice - PS", "L5 - Practice - PS", "L6 - Practice - PS", "L7 - Practice - PS", "L8 - Practice - PS"];
-    $pdscourses = ["L1 - Practice - DS", "L2 - Practice - DS", "L3 - Practice - DS", "L4 - Practice - DS", "L5 - Practice - DS", "L6 - Practice - DS", "L7 - Practice - DS", "L8 - Practice - DS"];
-    $pdbcourses = ["L1 - Practice - DB", "L2 - Practice - DB", "L3 - Practice - DB", "L4 - Practice - DB", "L5 - Practice - DB", "L6 - Practice - DB", "L7 - Practice - DB", "L8 - Practice - DB"];
-    $poopcourses = ["L1 - Practice - OOP", "L2 - Practice - OOP", "L3 - Practice - OOP", "L4 - Practice - OOP", "L5 - Practice - OOP", "L6 - Practice - OOP", "L7 - Practice - OOP", "L8 - Practice - OOP"];
+    $pdscourses = ["L1 - Practice - DS", "L2 - Practice - DS"];
+    $pdbcourses = ["L1 - Practice - DB", "L2 - Practice - DB", "L3 - Practice - DB", "L4 - Practice - DB"];
+    $poopcourses = ["L1 - Practice - OOP", "L2 - Practice - OOP"];
     $tpscourses = ["L1 - Test - PS", "L2 - Test - PS", "L3 - Test - PS", "L4 - Test - PS", "L5 - Test - PS", "L6 - Test - PS", "L7 - Test - PS", "L8 - Test - PS"];
-    $tdscourses = ["L1 - Test - DS", "L2 - Test - DS", "L3 - Test - DS", "L4 - Test - DS", "L5 - Test - DS", "L6 - Test - DS", "L7 - Test - DS", "L8 - Test - DS"];
-    $tdbcourses = ["L1 - Test - DB", "L2 - Test - DB", "L3 - Test - DB", "L4 - Test - DB", "L5 - Test - DB", "L6 - Test - DB", "L7 - Test - DB", "L8 - Test - DB"];
-    $toopcourses = ["L1 - Test - OOP", "L2 - Test - OOP", "L3 - Test - OOP", "L4 - Test - OOP", "L5 - Test - OOP", "L6 - Test - OOP", "L7 - Test - OOP", "L8 - Test - OOP"];
+    $tdscourses = ["L1 - Test - DS", "L2 - Test - DS"];
+    $tdbcourses = ["L1 - Test - DB", "L2 - Test - DB", "L3 - Test - DB", "L4 - Test - DB"];
+    $toopcourses = ["L1 - Test - OOP", "L2 - Test - OOP"];
     
     
     $output = '<!DOCTYPE html>
