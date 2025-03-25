@@ -94,7 +94,7 @@
         <!-- Filters Section -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <form id="filterForm" class="filter-container">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-8 gap-3">
                     <?php foreach ($filters as $key => $filter): ?>
                         <div class="filter-item">
                             <label for="<?php echo $key; ?>" class="block text-sm font-medium text-gray-700 mb-1">
@@ -109,7 +109,23 @@
                             </select>
                         </div>
                     <?php endforeach; ?>
-                    <div class="mt-4">
+                    <div class="filter-item">
+                        <label for="previousdate" class="block text-sm font-medium text-gray-700 mb-1">
+                            Previous Date
+                        </label>
+                        <select name="previousdate" id="previousDate"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+                            <option value="3">Week</option>
+                            <option value="1">1 Day</option>
+                            <option value="2">3 Day</option>
+                            <option value="4">1 Month</option>
+                            <option value="5">2 Months</option>
+                            <option value="6">3 Months</option>
+                            <option value="7">6 Months</option>
+                            <option value="8">Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-item flex items-end">
                         <button type="submit"
                             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                             Apply Filters
@@ -405,6 +421,11 @@
                 // Fetch and render data with filters
                 filterDataWithCriteria(formData);
             });
+
+            $('#previousDate').on('change', function () {
+                const previousDate = $(this).val();
+                fetchAndRenderAllData();
+            });
         });
 
         function filterDataWithCriteria(criteria) {
@@ -606,9 +627,11 @@
         function fetchAndRenderAllData() {
             // Show loading indicator
             showLoading();
+            $previousDate = $('#previousDate').val();
+            console.log($previousDate);
             // Fetch data from server
             $.ajax({
-                url: 'fetch_scores.php',
+                url: 'fetch_scores.php?previousDate=' + $previousDate,
                 type: 'GET',
                 dataType: 'json',
                 success: function (response) {
@@ -781,14 +804,14 @@
         function formatHeaderText(header) {
             // Replace hyphens with spaces, swap words, and capitalize first letter of each word
             return header
-            .replace(/_/g, ' ')
-            .replace(/-/g, ' ')
-            .replace(/Practice/, ' ')
-            .replace(/Test/, ' ')
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .reverse() // Swap words by reversing the array
-            .join(' ');
+                .replace(/_/g, ' ')
+                .replace(/-/g, ' ')
+                .replace(/Practice/, ' ')
+                .replace(/Test/, ' ')
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .reverse() // Swap words by reversing the array
+                .join(' ');
         }
 
         // Function to load passwords table
@@ -877,13 +900,25 @@
 
         // Helper functions for UI feedback
         function showLoading() {
-            // Add a loading indicator to the active tab
-            $('.tab-content:not(.hidden)').append('<div class="loading-overlay flex items-center justify-center p-4"><span class="text-primary-600">Loading data...</span></div>');
+            if ($('.loading-overlay').length === 0) {
+                $('body').append(`
+            <div class="loading-overlay fixed inset-0 bg-white/70 backdrop-blur-sm z-[9999] flex items-center justify-center">
+                <div class="flex flex-col items-center gap-3">
+                    <svg class="animate-spin h-10 w-10 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z"></path>
+                    </svg>
+                    <span class="text-primary-600 text-lg font-semibold">Loading data...</span>
+                </div>
+            </div>
+        `);
+            }
         }
 
         function hideLoading() {
             $('.loading-overlay').remove();
         }
+
 
         function showError(message) {
             // Display error message to user
