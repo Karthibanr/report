@@ -318,7 +318,7 @@ foreach ($poopcourses as $course) {
 
         // Test PS Course
 foreach ($tpscourses as $course) {
-    $mark=0;
+    $mark=$total=0;
     if (preg_match("/L1/", $course)) $mark=0.5;
     else if (preg_match("/L2/", $course)) $mark=1;
     else if (preg_match("/L3/", $course)) $mark=1.5;
@@ -338,16 +338,17 @@ foreach ($tpscourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $completionRow['Percentage']=0;
+                        $total = 0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $output .= '<td>' . $completionRow["Percentage"] * $mark . '</td>';
-                        $categoryTotal+=$completionRow["Percentage"]*$mark;
+                        $total=$completionRow["Percentage"] * $mark;
+                        $output .= '<td>' .  $total . '</td>';
+                        $categoryTotal+=$total;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$completionRow['Percentage']*$mark."');";
+                    values('".$row['username']."','".$course."','".$total."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
@@ -372,6 +373,15 @@ foreach ($tpscourses as $course) {
 
         // Test  DS Course
 foreach ($tdscourses as $course) {
+    $mark=$total=0;
+    if (preg_match("/L1/", $course)) $mark=0.5;
+    else if (preg_match("/L2/", $course)) $mark=1;
+    else if (preg_match("/L3/", $course)) $mark=1.5;
+    else if (preg_match("/L4/", $course)) $mark=2;
+    else if (preg_match("/L5/", $course)) $mark=2.5;
+    else if (preg_match("/L6/", $course)) $mark=3;
+    else if (preg_match("/L7/", $course)) $mark=3.5;
+    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
             $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
@@ -383,16 +393,17 @@ foreach ($tdscourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $completionRow['Percentage']=0;
+                        $total=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $categoryTotal+=$completionRow["Percentage"];
+                        $total=$completionRow["Percentage"] * $mark;
+                        $output .= '<td>' . $total . '</td>';
+                        $categoryTotal+=$total;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    values('".$row['username']."','".$course."','".$total."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
@@ -417,6 +428,15 @@ foreach ($tdscourses as $course) {
 
         // Test  DB Course
 foreach ($tdbcourses as $course) {
+    $mark=$total=0;
+    if (preg_match("/L1/", $course)) $mark=0.5;
+    else if (preg_match("/L2/", $course)) $mark=1;
+    else if (preg_match("/L3/", $course)) $mark=1.5;
+    else if (preg_match("/L4/", $course)) $mark=2;
+    else if (preg_match("/L5/", $course)) $mark=2.5;
+    else if (preg_match("/L6/", $course)) $mark=3;
+    else if (preg_match("/L7/", $course)) $mark=3.5;
+    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
             $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
@@ -428,16 +448,17 @@ foreach ($tdbcourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $completionRow['Percentage']=0;
+                        $total=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $categoryTotal+=$completionRow["Percentage"];
+                        $total = $completionRow["Percentage"] * $mark;
+                        $output .= '<td>' .$total . '</td>';
+                        $categoryTotal+=$total;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    values('".$row['username']."','".$course."','". $total ."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
@@ -462,6 +483,15 @@ foreach ($tdbcourses as $course) {
 
         // Test  OOPS Course
 foreach ($toopcourses as $course) {
+    $mark=$total=0;
+    if (preg_match("/L1/", $course)) $mark=0.5;
+    else if (preg_match("/L2/", $course)) $mark=1;
+    else if (preg_match("/L3/", $course)) $mark=1.5;
+    else if (preg_match("/L4/", $course)) $mark=2;
+    else if (preg_match("/L5/", $course)) $mark=2.5;
+    else if (preg_match("/L6/", $course)) $mark=3;
+    else if (preg_match("/L7/", $course)) $mark=3.5;
+    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
             $completionQuery = "SELECT username, SUM(grade) AS Percentage  
                                 FROM grades 
@@ -473,16 +503,17 @@ foreach ($toopcourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $completionRow['Percentage']=0;
+                        $total=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
-                        $categoryTotal+=$completionRow["Percentage"];
+                        $total=$completionRow["Percentage"]*$mark;
+                        $output .= '<td>' . $total . '</td>';
+                        $categoryTotal+=$total;
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
+                    values('".$row['username']."','".$course."','".$total."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
