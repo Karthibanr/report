@@ -770,9 +770,7 @@
                 fixedColumns: {
                     leftColumns: 1
                 },
-                columnDefs: [
-                    { targets: [1, 2, 3, 4, 5, 6], visible: false }
-                ],
+           
                 createdRow: function (row, data, dataIndex) {
                     $(row).addClass('hover:bg-green-100'); // Tailwind hover effect for row
                 },
