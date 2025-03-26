@@ -159,7 +159,7 @@
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
-                        data-tab="chart">
+                        data-tab="dispChart">
                         Score Chart
                     </button>
                     <button
@@ -209,15 +209,16 @@
                 </div>
 
                 <!-- Chart Tab -->
-                <div id="chart" class="tab-content hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Student Performance</h3>
-                            <canvas id="performanceChart" height="300"></canvas>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Placement Statistics</h3>
-                            <canvas id="placementChart" height="300"></canvas>
+                <div id="dispChart" class="tab-content hidden">
+                    <div class="overflow-x-auto">
+                        <input id="regSearch" type="text" placeholder="Enter Register No..."
+                            class="border p-2 rounded w-full mb-4" />
+                        <p><strong>Register Number:</strong> <span id="dispRegNo"></span></p>
+                        <p><strong>Department:</strong> <span id="dispDept"></span></p>
+                        <p><strong>Rank:</strong> <span id="dispRank"></span></p>
+
+                        <div id="progressContainer" class="grid grid-cols-1 gap-6">
+                            <!-- Progress bars will be dynamically inserted here -->
                         </div>
                     </div>
                 </div>
@@ -426,6 +427,12 @@
                 const previousDate = $(this).val();
                 fetchAndRenderAllData();
             });
+
+            $('#regSearch').on('keypress', function (e) {
+                if (e.which === 13) { // Enter key
+                    const regNo = $(this).val();
+                    generateDetailedProgressForRegisterNo(regNo);                }
+            });
         });
 
         function filterDataWithCriteria(criteria) {
@@ -628,7 +635,6 @@
             // Show loading indicator
             showLoading();
             $previousDate = $('#previousDate').val();
-            console.log($previousDate);
             // Fetch data from server
             $.ajax({
                 url: 'fetch_scores.php?previousDate=' + $previousDate,
@@ -814,6 +820,156 @@
                 .join(' ');
         }
 
+        function generateDetailedProgressForRegisterNo(regNo) {
+            $.ajax({
+                url: 'fetch_chart.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    renderDetailedProgress(regNo, response.course_total);
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    showError('Failed to fetch data.');
+                    hideLoading();
+                }
+            });
+        }
+
+        function renderDetailedProgress(regNo, courseTotalScores) {
+            const practiceData = globalFetchedData.practice_scores.rows.find(row => row.username === regNo);
+            const testData = globalFetchedData.test_scores.rows.find(row => row.username === regNo);
+            const overallData = globalFetchedData.overall_scores.rows.find(row => row.username === regNo);
+
+            if (!practiceData || !testData) {
+                alert('No data found for this register number');
+                return;
+            }
+
+            // Display rank & department
+            document.getElementById('dispRegNo').innerText = regNo;
+            document.getElementById('dispDept').innerText = practiceData.department || "N/A";
+            document.getElementById('dispRank').innerText = overallData.overall_rank || "N/A";
+
+            const levels = ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"];
+            const subjects = ["PS", "DS", "DB", "OOP"];
+
+            // Create main container
+            const progressContainer = document.getElementById('progressContainer');
+            progressContainer.innerHTML = ''; // Clear previous content
+            progressContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
+
+            // Practice Scores Section
+            const practiceSection = document.createElement('div');
+            practiceSection.className = 'bg-white p-6 rounded-lg shadow-md';
+            practiceSection.innerHTML = `
+        <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Practice Scores</h3>
+    `;
+
+            // Test Scores Section
+            const testSection = document.createElement('div');
+            testSection.className = 'bg-white p-6 rounded-lg shadow-md';
+            testSection.innerHTML = `
+        <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Test Scores</h3>
+    `;
+
+            // Process each subject
+            subjects.forEach((subject, index) => {
+                // Practice Score Calculation
+                const practiceSubjectDetails = createSubjectScoreDetails(
+                    subject,
+                    'Practice',
+                    levels,
+                    practiceData,
+                    courseTotalScores,
+                    ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'][index]
+                );
+                practiceSection.appendChild(practiceSubjectDetails);
+
+                // Test Score Calculation
+                const testSubjectDetails = createSubjectScoreDetails(
+                    subject,
+                    'Test',
+                    levels,
+                    testData,
+                    courseTotalScores,
+                    ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-red-600'][index]
+                );
+                testSection.appendChild(testSubjectDetails);
+            });
+
+            // Append sections to container
+            progressContainer.appendChild(practiceSection);
+            progressContainer.appendChild(testSection);
+        }
+
+        function createSubjectScoreDetails(subject, type, levels, studentData, courseTotalScores, progressColor) {
+            // Create subject container
+            const subjectContainer = document.createElement('div');
+            subjectContainer.className = 'mb-6';
+
+            // Calculate total scores
+            const subjectTotalScore = courseTotalScores
+                .filter(course => course.course_name.includes(`${type} - ${subject}`))
+                .reduce((sum, course) => sum + parseInt(course.total_score), 0);
+
+            const studentSubjectScores = levels.map(level => {
+                const score = parseInt(studentData[`${level} - ${type} - ${subject}`] || 0);
+                const totalLevelScore = courseTotalScores
+                    .find(course => course.course_name === `${level} - ${type} - ${subject}`)?.total_score || 0;
+                return { level, score, totalLevelScore };
+            });
+
+            const studentScore = studentSubjectScores.reduce((sum, item) => sum + item.score, 0);
+            const percentage = subjectTotalScore > 0
+                ? ((studentScore / subjectTotalScore) * 100).toFixed(2)
+                : 0;
+
+            // Subject header
+            const subjectHeader = document.createElement('div');
+            subjectHeader.className = 'flex justify-between items-center mb-3';
+            subjectHeader.innerHTML = `
+        <h4 class="text-lg font-semibold text-gray-700">${subject} ${type}</h4>
+        <span class="text-sm font-medium text-gray-600">
+            ${studentScore} / ${subjectTotalScore} (${percentage}%)
+        </span>
+    `;
+            subjectContainer.appendChild(subjectHeader);
+
+            // Progress bar
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'w-full bg-gray-200 rounded-full h-4 overflow-hidden mb-4';
+            const progressBar = document.createElement('div');
+            progressBar.className = `h-4 rounded-full ${progressColor} transition-all duration-500 ease-in-out`;
+            progressBar.style.width = `${percentage}%`;
+            progressContainer.appendChild(progressBar);
+            subjectContainer.appendChild(progressContainer);
+
+            // Detailed level scores
+            const levelsDetailsContainer = document.createElement('div');
+            levelsDetailsContainer.className = 'space-y-2';
+
+            studentSubjectScores.forEach(levelScore => {
+                const levelScoreItem = document.createElement('div');
+                levelScoreItem.className = 'flex justify-between items-center text-sm';
+
+                const percentage = levelScore.totalLevelScore > 0
+                    ? ((levelScore.score / levelScore.totalLevelScore) * 100).toFixed(2)
+                    : 0;
+
+                levelScoreItem.innerHTML = `
+            <span class="text-gray-600">${levelScore.level}</span>
+            <span class="text-gray-800">
+                ${levelScore.score} / ${levelScore.totalLevelScore} (${percentage}%)
+            </span>
+        `;
+                levelsDetailsContainer.appendChild(levelScoreItem);
+            });
+
+            subjectContainer.appendChild(levelsDetailsContainer);
+
+            return subjectContainer;
+        }
         // Function to load passwords table
         function loadPasswordsTable() {
             // Fetch password data from a separate endpoint
