@@ -431,7 +431,8 @@
             $('#regSearch').on('keypress', function (e) {
                 if (e.which === 13) { // Enter key
                     const regNo = $(this).val();
-                    generateDetailedProgressForRegisterNo(regNo);                }
+                    generateDetailedProgressForRegisterNo(regNo);
+                }
             });
         });
 
@@ -629,6 +630,9 @@
                     }
                 });
             }, 100);
+            $(window).on('resize', function () {
+                dataTable.columns.adjust();
+            });
         }
 
         function fetchAndRenderAllData() {
@@ -682,7 +686,6 @@
         // Function to render each table with DataTables
         function renderTable(tableId, tableData) {
             if (!tableData || !tableData.headers || !tableData.rows) {
-                console.error(`Invalid data format for table ${tableId}`);
                 return;
             }
 
@@ -695,51 +698,68 @@
 
             tableContainer.empty();
 
+            // Columns to hide
+            const columnsToHide = [
+                'institution',
+                'department',
+                'section',
+                'batch',
+                'programming',
+                'graduation_year'
+            ];
+
             // Process headers to create column definitions that correctly handle diff values
-            const columnDefs = [];
-            const baseHeaders = [];
+            const renderDiffColumn = function (header) {
+                const diffHeader = `${header}_diff`;
+                return function (data, type, row) {
+                    if (type === 'display') {
+                        const diffValue = row[diffHeader];
 
-            tableData.headers.forEach(header => {
-                if (!header.includes('_diff')) {
-                    baseHeaders.push(header);
+                        // Type conversion and validation
+                        const numericDiffValue = diffValue !== null && diffValue !== undefined
+                            ? Number(diffValue)
+                            : null;
 
-                    // Check if there's a corresponding diff header
-                    const diffHeader = `${header}_diff`;
-                    if (tableData.headers.includes(diffHeader)) {
-                        columnDefs.push({
-                            targets: baseHeaders.length - 1,
-                            data: header,
-                            title: formatHeaderText(header),
-                            render: function (data, type, row) {
-                                if (type === 'display') {
-                                    const diffValue = row[diffHeader];
-                                    if (diffValue !== undefined && diffValue !== null && diffValue !== 0) {
-                                        const formattedDiff = diffValue > 0 ? `+${diffValue}` : diffValue;
-                                        const color = getDiffColor(diffValue);
-                                        return `${data} <span style="color: ${color}; font-weight: bold;">(${formattedDiff})</span>`;
-                                    }
-                                }
-                                return data;
-                            }
-
-                        });
-                    } else {
-                        columnDefs.push({
-                            targets: baseHeaders.length - 1,
-                            data: header,
-                            title: formatHeaderText(header)
-                        });
+                        // Render only if we have a meaningful numeric value
+                        if (numericDiffValue !== null && !isNaN(numericDiffValue) && numericDiffValue !== 0) {
+                            const formattedDiff = numericDiffValue > 0
+                                ? `+${numericDiffValue}`
+                                : `${numericDiffValue}`;
+                            const color = getDiffColor(Math.abs(numericDiffValue));
+                            return `${data} <span style="color: ${color}; font-weight: bold;">(${formattedDiff})</span>`;
+                        }
                     }
+                    return data;
+                };
+            };
+
+            // Prepare columns and column definitions
+            const columns = [];
+            const columnDefs = [];
+
+            tableData.headers.forEach((header, index) => {
+                if (!header.includes('_diff')) {
+                    const diffHeader = `${header}_diff`;
+
+                    const columnDefinition = {
+                        data: header,
+                        title: formatHeaderText(header),
+                        visible: !columnsToHide.includes(header)
+                    };
+
+                    // If there's a corresponding diff header, add custom rendering
+                    if (tableData.headers.includes(diffHeader)) {
+                        columnDefinition.render = renderDiffColumn(header);
+                    }
+
+                    columns.push(columnDefinition);
                 }
             });
 
-            // Initialize DataTable with horizontal scrolling and custom rendering
+            // Initialize DataTable
             const dataTable = tableContainer.DataTable({
                 data: tableData.rows,
-                columns: baseHeaders.map(header => {
-                    return { data: header, title: formatHeaderText(header) };
-                }),
-                columnDefs: columnDefs,
+                columns: columns,
                 responsive: false,
                 scrollX: true,
                 scrollY: '400px',
@@ -770,7 +790,6 @@
                 fixedColumns: {
                     leftColumns: 1
                 },
-           
                 createdRow: function (row, data, dataIndex) {
                     $(row).addClass('hover:bg-green-100'); // Tailwind hover effect for row
                 },
@@ -780,7 +799,6 @@
                     this.api().columns.adjust().draw();
                 }
             });
-
 
             // Add custom search input above the table
             const searchContainer = $('<div>').addClass('mb-4 flex items-center');
