@@ -362,11 +362,13 @@
 
     <script>
         let globalFetchedData = null;
+        let courseTotalScores = null;
         // Dashboard Data Renderer
         $(document).ready(function () {
             // Load initial data
             loadPasswordsTable();
-            fetchAndRenderAllData();
+            getTotalScores();
+
 
             $('.tab-btn').click(function () {
                 // Remove active class from all buttons
@@ -431,10 +433,28 @@
             $('#regSearch').on('keypress', function (e) {
                 if (e.which === 13) { // Enter key
                     const regNo = $(this).val();
-                    generateDetailedProgressForRegisterNo(regNo);
+                    renderDetailedProgress(regNo, courseTotalScores);
                 }
             });
         });
+
+        function getTotalScores(regNo) {
+            $.ajax({
+                url: 'fetch_chart.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    courseTotalScores = response.course_total;
+                    console.log(courseTotalScores);
+                    fetchAndRenderAllData();
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    showError('Failed to fetch data.');
+                    hideLoading();
+                }
+            });
+        }
 
         function filterDataWithCriteria(criteria) {
             if (!globalFetchedData) return;
@@ -503,22 +523,25 @@
             const thead = $('<thead>').addClass('bg-gray-100');
             const tbody = $('<tbody>');
 
-            // First header row - Main categories (only Practice)
+            // Dynamically determine subjects
+            const subjects = ['PS', 'DS', 'DB', 'OOP'];
+
+            // First header row - Main categories
             const headerRow1 = $('<tr>');
             headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Department'));
             headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Total Students'));
             thead.append(headerRow1);
 
-            // Second header row - Subjects (only once)
+            // Second header row - Subjects
             const headerRow2 = $('<tr>');
-            ['PS', 'DB', 'DS', 'OOP'].forEach(subject => {
+            subjects.forEach(subject => {
                 headerRow2.append($('<th>').attr('colspan', 8).addClass('border px-4 py-2').text(subject));
             });
             thead.append(headerRow2);
 
             // Third header row - Levels
             const headerRow3 = $('<tr>');
-            for (let i = 0; i < 4; i++) { // Only 4 subjects
+            for (let i = 0; i < 4; i++) { // 4 subjects
                 for (let j = 1; j <= 8; j++) {
                     headerRow3.append($('<th>').addClass('border px-4 py-2').text(`L${j}`));
                 }
@@ -529,7 +552,9 @@
 
             // Collect department totals and aggregate data
             const departmentTotals = {};
+            const departmentCompletedYesterday = {};
             const aggregatedData = {};
+            const aggregatedCompletedYesterday = {};
 
             // Process rows to aggregate data
             tableData.rows.forEach(rowData => {
@@ -538,6 +563,7 @@
                 // Count total students per department
                 if (!departmentTotals[dept]) {
                     departmentTotals[dept] = 1;
+                    departmentCompletedYesterday[dept] = 0;
                 } else {
                     departmentTotals[dept]++;
                 }
@@ -545,21 +571,30 @@
                 // Initialize department in aggregatedData if not exists
                 if (!aggregatedData[dept]) {
                     aggregatedData[dept] = { department: dept };
+                    aggregatedCompletedYesterday[dept] = { department: dept };
                 }
 
-                // Process each subject and level
-                const subjects = ['PS', 'DB', 'DS', 'OOP'];
+                // Process each subject
                 subjects.forEach(subject => {
+                    // Process each level from L1 to L8
                     for (let level = 1; level <= 8; level++) {
                         const key = `L${level} - Practice - ${subject}`;
+                        const diffKey = `${key}_diff`;
 
-                        // Only count non-zero values
+                        // Check if student completed the column
                         if (rowData[key] && parseFloat(rowData[key]) > 0) {
                             // Initialize the key if not exists
                             if (!aggregatedData[dept][key]) {
                                 aggregatedData[dept][key] = 0;
+                                aggregatedCompletedYesterday[dept][key] = 0;
                             }
                             aggregatedData[dept][key]++;
+
+                            // Check if completed in previous day (diff is positive)
+                            if (rowData[diffKey] && parseFloat(rowData[diffKey]) > 0) {
+                                aggregatedCompletedYesterday[dept][key]++;
+                                departmentCompletedYesterday[dept]++;
+                            }
                         }
                     }
                 });
@@ -568,14 +603,26 @@
             // Render rows
             Object.values(aggregatedData).forEach(rowData => {
                 const row = $('<tr>').addClass('hover:bg-gray-100');
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(rowData.department));
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(departmentTotals[rowData.department] || 0));
+                const dept = rowData.department;
 
-                const subjects = ['PS', 'DB', 'DS', 'OOP'];
+                // Department column with total students
+                const totalStudents = departmentTotals[dept] || 0;
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(dept));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(totalStudents));
+
+                // Subject columns
                 subjects.forEach(subject => {
+                    // Process each level from L1 to L8
                     for (let level = 1; level <= 8; level++) {
                         const key = `L${level} - Practice - ${subject}`;
-                        row.append($('<td>').addClass('border px-4 py-2 text-center').text(rowData[key] || 0));
+                        const value = aggregatedData[dept][key] || 0;
+                        const completedYesterday = aggregatedCompletedYesterday[dept][key] || 0;
+
+                        row.append($('<td>').addClass('border px-4 py-2 text-center')
+                            .html(completedYesterday > 0
+                                ? `${value} <span class="text-sm text-green-600">(+${completedYesterday})</span>`
+                                : `${value}`)
+                        );
                     }
                 });
 
@@ -601,9 +648,6 @@
                     fixedColumns: {
                         left: 2
                     },
-                    columnDefs: [
-                        { targets: [14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33], visible: false }
-                    ],
                     autoWidth: false,
                     dom: 'Bfrtip',
                     buttons: [
@@ -834,22 +878,6 @@
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .reverse() // Swap words by reversing the array
                 .join(' ');
-        }
-
-        function generateDetailedProgressForRegisterNo(regNo) {
-            $.ajax({
-                url: 'fetch_chart.php',
-                type: 'GET',
-                dataType: 'json',
-                success: function (response) {
-                    renderDetailedProgress(regNo, response.course_total);
-                },
-                error: function (xhr, status, error) {
-                    console.error('AJAX error:', error);
-                    showError('Failed to fetch data.');
-                    hideLoading();
-                }
-            });
         }
 
         function renderDetailedProgress(regNo, courseTotalScores) {
