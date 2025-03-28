@@ -142,7 +142,7 @@ if ($result->num_rows > 0) {
         // Practice Problem Solving couse level 1 to 8
         foreach ($ppscourses as $course) {
             $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -187,7 +187,7 @@ if ($result->num_rows > 0) {
         // Practice  DS Course
         foreach ($pdscourses as $course) {
             $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -231,7 +231,7 @@ if ($result->num_rows > 0) {
         // Practice  DB Course
 foreach ($pdbcourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade)  AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -275,7 +275,7 @@ foreach ($pdbcourses as $course) {
         // Practice  OOPS Course
 foreach ($poopcourses as $course) {
     $tempCourse=$course;
-            $completionQuery = "SELECT username,SUM(grade)  AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -318,17 +318,8 @@ foreach ($poopcourses as $course) {
 
         // Test PS Course
 foreach ($tpscourses as $course) {
-    $mark=$total=0;
-    if (preg_match("/L1/", $course)) $mark=0.5;
-    else if (preg_match("/L2/", $course)) $mark=1;
-    else if (preg_match("/L3/", $course)) $mark=1.5;
-    else if (preg_match("/L4/", $course)) $mark=2;
-    else if (preg_match("/L5/", $course)) $mark=2.5;
-    else if (preg_match("/L6/", $course)) $mark=3;
-    else if (preg_match("/L7/", $course)) $mark=3.5;
-    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade)  AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -338,17 +329,16 @@ foreach ($tpscourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $total = 0;
+                        $completionRow['Percentage']=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $total=$completionRow["Percentage"] * $mark;
-                        $output .= '<td>' .  $total . '</td>';
-                        $categoryTotal+=$total;
+                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $categoryTotal+=$completionRow["Percentage"];
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$total."');";
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
@@ -373,17 +363,8 @@ foreach ($tpscourses as $course) {
 
         // Test  DS Course
 foreach ($tdscourses as $course) {
-    $mark=$total=0;
-    if (preg_match("/L1/", $course)) $mark=0.5;
-    else if (preg_match("/L2/", $course)) $mark=1;
-    else if (preg_match("/L3/", $course)) $mark=1.5;
-    else if (preg_match("/L4/", $course)) $mark=2;
-    else if (preg_match("/L5/", $course)) $mark=2.5;
-    else if (preg_match("/L6/", $course)) $mark=3;
-    else if (preg_match("/L7/", $course)) $mark=3.5;
-    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -393,17 +374,16 @@ foreach ($tdscourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $total=0;
+                        $completionRow['Percentage']=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $total=$completionRow["Percentage"] * $mark;
-                        $output .= '<td>' . $total . '</td>';
-                        $categoryTotal+=$total;
+                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $categoryTotal+=$completionRow["Percentage"];
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$total."');";
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
@@ -428,17 +408,8 @@ foreach ($tdscourses as $course) {
 
         // Test  DB Course
 foreach ($tdbcourses as $course) {
-    $mark=$total=0;
-    if (preg_match("/L1/", $course)) $mark=0.5;
-    else if (preg_match("/L2/", $course)) $mark=1;
-    else if (preg_match("/L3/", $course)) $mark=1.5;
-    else if (preg_match("/L4/", $course)) $mark=2;
-    else if (preg_match("/L5/", $course)) $mark=2.5;
-    else if (preg_match("/L6/", $course)) $mark=3;
-    else if (preg_match("/L7/", $course)) $mark=3.5;
-    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -448,17 +419,16 @@ foreach ($tdbcourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $total=0;
+                        $completionRow['Percentage']=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $total = $completionRow["Percentage"] * $mark;
-                        $output .= '<td>' .$total . '</td>';
-                        $categoryTotal+=$total;
+                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $categoryTotal+=$completionRow["Percentage"];
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','". $total ."');";
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
@@ -483,17 +453,8 @@ foreach ($tdbcourses as $course) {
 
         // Test  OOPS Course
 foreach ($toopcourses as $course) {
-    $mark=$total=0;
-    if (preg_match("/L1/", $course)) $mark=0.5;
-    else if (preg_match("/L2/", $course)) $mark=1;
-    else if (preg_match("/L3/", $course)) $mark=1.5;
-    else if (preg_match("/L4/", $course)) $mark=2;
-    else if (preg_match("/L5/", $course)) $mark=2.5;
-    else if (preg_match("/L6/", $course)) $mark=3;
-    else if (preg_match("/L7/", $course)) $mark=3.5;
-    else if (preg_match("/L8/", $course)) $mark=4;
     $tempCourse=$course;
-            $completionQuery = "SELECT username, SUM(grade) AS Percentage  
+            $completionQuery = "SELECT username, ROUND(SUM(grade) / (COUNT(course_name) * 100), 2) * 100 AS Percentage  
                                 FROM grades 
                                 WHERE course_name LIKE '%".$course."%' 
                                 AND username = '".$row["username"]."' 
@@ -503,17 +464,16 @@ foreach ($toopcourses as $course) {
             if ($completionResult->num_rows > 0) {
                 while ($completionRow = $completionResult->fetch_assoc()) {
                     if ($completionRow["Percentage"] == NULL){
-                        $total=0;
+                        $completionRow['Percentage']=0;
                         $output .= '<td>0</td>';
                     }
                         
                     else {
-                        $total=$completionRow["Percentage"]*$mark;
-                        $output .= '<td>' . $total . '</td>';
-                        $categoryTotal+=$total;
+                        $output .= '<td>' . $completionRow["Percentage"] . '</td>';
+                        $categoryTotal+=$completionRow["Percentage"];
                     }
                     $levelInsertSql="insert into levelScore(username,course_name,total)
-                    values('".$row['username']."','".$course."','".$total."');";
+                    values('".$row['username']."','".$course."','".$completionRow['Percentage']."');";
                     $levelInsertResult = $conn->query($levelInsertSql);
                 }
             } else {
