@@ -145,8 +145,13 @@ include 'filters.php';
                 <nav class="-mb-px flex space-x-8 overflow-x-auto">
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-primary-500 font-medium text-sm text-primary-600 hover:text-green-600 active"
-                        data-tab="completed-students">
-                        Course Completion
+                        data-tab="practice-summary">
+                        Practice Summary
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
+                        data-tab="test-summary">
+                        Test Summary
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
@@ -155,13 +160,13 @@ include 'filters.php';
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
-                        data-tab="test-scores">
-                        Test Scores
+                        data-tab="practice-scores">
+                        Practice Scores
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
-                        data-tab="practice-scores">
-                        Practice Scores
+                        data-tab="test-scores">
+                        Test Scores
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
@@ -178,10 +183,19 @@ include 'filters.php';
 
             <!-- Tab Content -->
             <div class="mt-6">
-                <!-- Completed Students Tab -->
-                <div id="completed-students" class="tab-content">
+                <!-- Practice Summary Tab -->
+                <div id="practice-summary" class="tab-content">
                     <div class="overflow-x-auto">
-                        <table id="completed-students-table" class="min-w-full divide-y divide-gray-200">
+                        <table id="practice-summary-table" class="min-w-full divide-y divide-gray-200">
+                            <!-- Data will be loaded dynamically -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Test Summary Tab -->
+                <div id="test-summary" class="tab-content hidden">
+                    <div class="overflow-x-auto">
+                        <table id="test-summary-table" class="min-w-full divide-y divide-gray-200">
                             <!-- Data will be loaded dynamically -->
                         </table>
                     </div>
@@ -217,11 +231,30 @@ include 'filters.php';
                 <!-- Chart Tab -->
                 <div id="dispChart" class="tab-content hidden">
                     <div class="overflow-x-auto">
-                        <input id="regSearch" type="text" placeholder="Enter Register No..."
-                            class="border p-2 rounded w-full mb-4" />
-                        <p><strong>Register Number:</strong> <span id="dispRegNo"></span></p>
-                        <p><strong>Department:</strong> <span id="dispDept"></span></p>
-                        <p><strong>Rank:</strong> <span id="dispRank"></span></p>
+                        <!-- Center input and button only on larger screens -->
+                        <div class="flex justify-center sm:w-1/2 mx-auto mb-4">
+                            <div class="flex flex-col sm:flex-row items-center w-full sm:space-x-4">
+                                <div class="flex-grow">
+                                    <input id="regSearch" type="text" placeholder="Enter Register No..."
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                                </div>
+                                <div>
+                                    <button id="searchButton"
+                                        class="px-6 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 mb-4">
+                            <p class="text-gray-700"><strong>Register Number:</strong> <span id="dispRegNo"
+                                    class="text-black"></span></p>
+                            <p class="text-gray-700"><strong>Department:</strong> <span id="dispDept"
+                                    class="text-black"></span></p>
+                            <p class="text-gray-700"><strong>Rank:</strong> <span id="dispRank"
+                                    class="text-black"></span></p>
+                        </div>
 
                         <div id="progressContainer" class="grid grid-cols-1 gap-6">
                             <!-- Progress bars will be dynamically inserted here -->
@@ -368,13 +401,12 @@ include 'filters.php';
 
     <script>
         let globalFetchedData = null;
-        let courseTotalScores = null;
+
         // Dashboard Data Renderer
         $(document).ready(function () {
             // Load initial data
             loadPasswordsTable();
-            getTotalScores();
-
+            fetchAndRenderAllData();
 
             $('.tab-btn').click(function () {
                 // Remove active class from all buttons
@@ -396,7 +428,6 @@ include 'filters.php';
                     }
                 }, 100); // short delay allows DOM to finish rendering
             });
-
 
             // Modal functionality
             $('#infoButton').click(function () {
@@ -436,31 +467,20 @@ include 'filters.php';
                 fetchAndRenderAllData();
             });
 
+            // Existing keypress event for Enter key
             $('#regSearch').on('keypress', function (e) {
                 if (e.which === 13) { // Enter key
                     const regNo = $(this).val();
-                    renderDetailedProgress(regNo, courseTotalScores);
+                    renderDetailedProgress(regNo);
                 }
+            });
+
+            // New click event for the search button
+            $('#searchButton').on('click', function () {
+                const regNo = $('#regSearch').val();
+                renderDetailedProgress(regNo);
             });
         });
-
-        function getTotalScores(regNo) {
-            $.ajax({
-                url: 'fetch_chart.php',
-                type: 'GET',
-                dataType: 'json',
-                success: function (response) {
-                    courseTotalScores = response.course_total;
-                    console.log(courseTotalScores);
-                    fetchAndRenderAllData();
-                },
-                error: function (xhr, status, error) {
-                    console.error('AJAX error:', error);
-                    showError('Failed to fetch data.');
-                    hideLoading();
-                }
-            });
-        }
 
         function filterDataWithCriteria(criteria) {
             if (!globalFetchedData) return;
@@ -490,10 +510,6 @@ include 'filters.php';
                     });
                 });
             }
-            const filteredCompletion = {
-                headers: globalFetchedData.practice_scores.headers,
-                rows: filterRows(globalFetchedData.practice_scores.rows)
-            };
             const filteredPractice = {
                 headers: globalFetchedData.practice_scores.headers,
                 rows: filterRows(globalFetchedData.practice_scores.rows)
@@ -507,7 +523,8 @@ include 'filters.php';
                 rows: filterRows(globalFetchedData.overall_scores.rows)
             } : null;
 
-            renderCourseCompletionTable(filteredCompletion);
+            renderSubjectSummaryTable('practice-summary', filteredPractice);
+            renderSubjectSummaryTable('test-summary', filteredTest);
             renderTable('practice-scores', filteredPractice);
             renderTable('test-scores', filteredTest);
             if (filteredOverall) {
@@ -515,46 +532,68 @@ include 'filters.php';
             }
         }
 
-        function renderCourseCompletionTable(tableData) {
+        function renderSubjectSummaryTable(tableId, tableData) {
+            // Validate input data
             if (!tableData || !tableData.headers || !tableData.rows) {
-                console.error('Invalid data format for course completion table');
+                console.error(`Invalid data format for summary table`);
                 return;
             }
 
-            const tableContainer = $('#completed-students-table');
+            const tableContainer = $(`#${tableId}-table`);
+            if (tableContainer.length === 0) {
+                console.error(`Table container #${tableId}-table not found`);
+                return;
+            }
+
+            // Clear existing table content
             tableContainer.empty();
 
-            const tableId = 'course-completion-table';
-            const table = $('<table>').attr('id', tableId).addClass('display nowrap w-full border-collapse min-w-max');
-            const thead = $('<thead>').addClass('bg-gray-100');
-            const tbody = $('<tbody>');
+            // Dynamically extract subjects and levels from headers
+            const subjects = [];
+            const subjectLevels = {};
 
-            // Dynamically determine subjects
-            const subjects = ['PS', 'DS', 'DB', 'OOP'];
-
-            // First header row - Main categories
-            const headerRow1 = $('<tr>');
-            headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Department'));
-            headerRow1.append($('<th>').attr('rowspan', 3).addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Total Students'));
-            thead.append(headerRow1);
-
-            // Second header row - Subjects
-            const headerRow2 = $('<tr>');
-            subjects.forEach(subject => {
-                headerRow2.append($('<th>').attr('colspan', 8).addClass('border px-4 py-2').text(subject));
-            });
-            thead.append(headerRow2);
-
-            // Third header row - Levels
-            const headerRow3 = $('<tr>');
-            for (let i = 0; i < 4; i++) { // 4 subjects
-                for (let j = 1; j <= 8; j++) {
-                    headerRow3.append($('<th>').addClass('border px-4 py-2').text(`L${j}`));
+            // Find unique subjects and their levels
+            tableData.headers.forEach(header => {
+                // Exclude headers containing _diff
+                if (!header.includes('_diff')) {
+                    const match = header.match(/L(\d+) - Practice - (\w+)/);
+                    if (match) {
+                        const [, level, subject] = match;
+                        if (!subjects.includes(subject)) {
+                            subjects.push(subject);
+                            subjectLevels[subject] = [];
+                        }
+                        if (!subjectLevels[subject].includes(level)) {
+                            subjectLevels[subject].push(level);
+                        }
+                    }
                 }
-            }
-            thead.append(headerRow3);
+            });
 
-            table.append(thead);
+            // Sort levels for consistent display
+            Object.keys(subjectLevels).forEach(subject => {
+                subjectLevels[subject].sort((a, b) => parseInt(a) - parseInt(b));
+            });
+
+            // Create table header
+            const thead = $('<thead>');
+            const headerRow = $('<tr>');
+
+            // Add Department and Total Students headers
+            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Department'));
+            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Total Students'));
+
+            // Add subject-level headers
+            subjects.forEach(subject => {
+                subjectLevels[subject].forEach(level => {
+                    headerRow.append($('<th>').addClass('border px-4 py-2').text(`${subject} L${level}`));
+                });
+            });
+
+            thead.append(headerRow);
+            tableContainer.append(thead);
+
+            const tbody = $('<tbody>');
 
             // Collect department totals and aggregate data
             const departmentTotals = {};
@@ -582,27 +621,28 @@ include 'filters.php';
 
                 // Process each subject
                 subjects.forEach(subject => {
-                    // Process each level from L1 to L8
-                    for (let level = 1; level <= 8; level++) {
-                        const key = `L${level} - Practice - ${subject}`;
-                        const diffKey = `${key}_diff`;
+                    // Process available levels for each subject
+                    subjectLevels[subject].forEach(level => {
+                        // Check Practice keys
+                        const practiceKey = `L${level} - Practice - ${subject}`;
+                        const practiceDiffKey = `${practiceKey}_diff`;
 
                         // Check if student completed the column
-                        if (rowData[key] && parseFloat(rowData[key]) > 0) {
+                        if (rowData[practiceKey] && parseFloat(rowData[practiceKey]) > 0) {
                             // Initialize the key if not exists
-                            if (!aggregatedData[dept][key]) {
-                                aggregatedData[dept][key] = 0;
-                                aggregatedCompletedYesterday[dept][key] = 0;
+                            if (!aggregatedData[dept][practiceKey]) {
+                                aggregatedData[dept][practiceKey] = 0;
+                                aggregatedCompletedYesterday[dept][practiceKey] = 0;
                             }
-                            aggregatedData[dept][key]++;
+                            aggregatedData[dept][practiceKey]++;
 
                             // Check if completed in previous day (diff is positive)
-                            if (rowData[diffKey] && parseFloat(rowData[diffKey]) > 0) {
-                                aggregatedCompletedYesterday[dept][key]++;
+                            if (rowData[practiceDiffKey] && parseFloat(rowData[practiceDiffKey]) > 0) {
+                                aggregatedCompletedYesterday[dept][practiceKey]++;
                                 departmentCompletedYesterday[dept]++;
                             }
                         }
-                    }
+                    });
                 });
             });
 
@@ -613,73 +653,71 @@ include 'filters.php';
 
                 // Department column with total students
                 const totalStudents = departmentTotals[dept] || 0;
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20').text(dept));
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center').text(totalStudents));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20 whitespace-nowrap').text(dept));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center whitespace-nowrap').text(totalStudents));
 
                 // Subject columns
                 subjects.forEach(subject => {
-                    // Process each level from L1 to L8
-                    for (let level = 1; level <= 8; level++) {
-                        const key = `L${level} - Practice - ${subject}`;
-                        const value = aggregatedData[dept][key] || 0;
-                        const completedYesterday = aggregatedCompletedYesterday[dept][key] || 0;
+                    // Process available levels for each subject
+                    subjectLevels[subject].forEach(level => {
+                        const practiceKey = `L${level} - Practice - ${subject}`;
 
-                        row.append($('<td>').addClass('border px-4 py-2 text-center')
-                            .html(completedYesterday > 0
-                                ? `${value} <span class="text-sm text-green-600">(+${completedYesterday})</span>`
-                                : `${value}`)
+                        // Get value
+                        const practiceValue = aggregatedData[dept][practiceKey] || 0;
+                        const practiceCompletedYesterday = aggregatedCompletedYesterday[dept][practiceKey] || 0;
+
+                        row.append($('<td>').addClass('border px-4 py-2 text-center whitespace-nowrap')
+                            .html(practiceCompletedYesterday > 0
+                                ? `${practiceValue} <span class="text-sm text-green-600">(+${practiceCompletedYesterday})</span>`
+                                : `${practiceValue}`)
                         );
-                    }
+                    });
                 });
 
                 tbody.append(row);
             });
 
-            table.append(tbody);
+            tableContainer.append(tbody);
 
-            const scrollContainer = $('<div>').addClass('overflow-x-auto max-w-full');
-            scrollContainer.append(table);
-            tableContainer.append(scrollContainer);
-
-            // Initialize DataTable with no pagination
-            setTimeout(() => {
-                $(`#${tableId}`).DataTable({
-                    scrollX: true,
-                    scrollY: '400px',
-                    scrollCollapse: true,
-                    paging: false,
-                    fixedHeader: {
-                        header: true
+            // Initialize DataTable with advanced configuration
+            const dataTable = $(`#${tableId}-table`).DataTable({
+                scrollX: true,
+                scrollY: '400px',
+                scrollCollapse: true,
+                paging: false,
+                fixedHeader: {
+                    header: true
+                },
+                fixedColumns: {
+                    left: 2
+                },
+                autoWidth: false,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
+                        text: 'Toggle Columns'
                     },
-                    fixedColumns: {
-                        left: 2
-                    },
-                    autoWidth: false,
-                    dom: 'Bfrtip',
-                    buttons: [
-                        {
-                            extend: 'colvis',
-                            className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
-                            text: 'Toggle Columns'
-                        },
-                        {
-                            extend: 'csv',
-                            className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
-                            text: 'Export CSV'
-                        }
-                    ],
-                    language: {
-                        search: "Filter:",
-                        info: "Showing _TOTAL_ entries",
-                        infoEmpty: "No entries found",
-                        infoFiltered: "(filtered from _MAX_ total entries)"
-                    },
-                    initComplete: function () {
-                        $('.dt-buttons').addClass('mb-4');
-                        this.api().columns.adjust().draw();
+                    {
+                        extend: 'csv',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                        text: 'Export CSV'
                     }
-                });
-            }, 100);
+                ],
+                language: {
+                    search: "Filter:",
+                    info: "Showing _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                },
+                initComplete: function () {
+                    $('.dt-buttons').addClass('mb-4');
+                    this.api().columns.adjust().draw();
+                }
+            });
+
+            // Window resize handler
             $(window).on('resize', function () {
                 dataTable.columns.adjust();
             });
@@ -700,8 +738,13 @@ include 'filters.php';
                         renderTable('practice-scores', response.data.practice_scores);
                         renderTable('test-scores', response.data.test_scores);
                         renderTable('overall-scores', response.data.overall_scores);
-                        // Pass practice_scores instead of course_completion
-                        renderCourseCompletionTable(response.data.practice_scores);
+
+                        // Render Practice Summary tab
+                        renderSubjectSummaryTable('practice-summary', response.data.practice_scores);
+
+                        // Render Test Summary tab
+                        renderSubjectSummaryTable('test-summary', response.data.test_scores);
+
                         hideLoading();
                     } else {
                         console.error('Error in API response:', response);
@@ -758,17 +801,20 @@ include 'filters.php';
                 'graduation_year'
             ];
 
-            // Process headers to create column definitions that correctly handle diff values
+            // Helper function to get numeric diff value
+            const getNumericDiffValue = function (diffValue) {
+                return diffValue !== null && diffValue !== undefined
+                    ? Number(diffValue)
+                    : null;
+            };
+
+            // Render diff column with color-coding
             const renderDiffColumn = function (header) {
                 const diffHeader = `${header}_diff`;
                 return function (data, type, row) {
                     if (type === 'display') {
                         const diffValue = row[diffHeader];
-
-                        // Type conversion and validation
-                        const numericDiffValue = diffValue !== null && diffValue !== undefined
-                            ? Number(diffValue)
-                            : null;
+                        const numericDiffValue = getNumericDiffValue(diffValue);
 
                         // Render only if we have a meaningful numeric value
                         if (numericDiffValue !== null && !isNaN(numericDiffValue) && numericDiffValue !== 0) {
@@ -779,6 +825,10 @@ include 'filters.php';
                             return `${data} <span style="color: ${color}; font-weight: bold;">(${formattedDiff})</span>`;
                         }
                     }
+                    // For sorting and filtering, return the numeric diff value
+                    if (type === 'sort') {
+                        return getNumericDiffValue(row[diffHeader]) || 0;
+                    }
                     return data;
                 };
             };
@@ -787,29 +837,38 @@ include 'filters.php';
             const columns = [];
             const columnDefs = [];
 
-            tableData.headers.forEach((header, index) => {
-                if (!header.includes('_diff')) {
-                    const diffHeader = `${header}_diff`;
+            // Filter out diff headers to avoid duplicate columns
+            const headers = tableData.headers.filter(header => !header.includes('_diff'));
 
-                    const columnDefinition = {
-                        data: header,
-                        title: formatHeaderText(header),
-                        visible: !columnsToHide.includes(header)
-                    };
+            headers.forEach((header, index) => {
+                const diffHeader = `${header}_diff`;
 
-                    // If there's a corresponding diff header, add custom rendering
-                    if (tableData.headers.includes(diffHeader)) {
-                        columnDefinition.render = renderDiffColumn(header);
-                    }
+                const columnDefinition = {
+                    data: header,
+                    title: formatHeaderText(header),
+                    visible: !columnsToHide.includes(header)
+                };
 
-                    columns.push(columnDefinition);
+                // If there's a corresponding diff header, add custom rendering and sorting
+                if (tableData.headers.includes(diffHeader)) {
+                    columnDefinition.render = renderDiffColumn(header);
+
+                    // Add a column definition for proper sorting of diff columns
+                    columnDefs.push({
+                        targets: index,
+                        type: 'num',
+                        render: renderDiffColumn(header)
+                    });
                 }
+
+                columns.push(columnDefinition);
             });
 
             // Initialize DataTable
             const dataTable = tableContainer.DataTable({
                 data: tableData.rows,
                 columns: columns,
+                columnDefs: columnDefs, // Add column definitions for sorting
                 responsive: false,
                 scrollX: true,
                 scrollY: '400px',
@@ -871,22 +930,21 @@ include 'filters.php';
                 dataTable.columns.adjust();
             });
         }
-
         // Format header text for better readability
         function formatHeaderText(header) {
             // Replace hyphens with spaces, swap words, and capitalize first letter of each word
             return header
                 .replace(/_/g, ' ')
                 .replace(/-/g, ' ')
-                .replace(/Practice/, ' ')
-                .replace(/Test/, ' ')
+                // .replace(/Practice/, ' ')
+                // .replace(/Test/, ' ')
                 .split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .reverse() // Swap words by reversing the array
                 .join(' ');
         }
 
-        function renderDetailedProgress(regNo, courseTotalScores) {
+        function renderDetailedProgress(regNo) {
             const practiceData = globalFetchedData.practice_scores.rows.find(row => row.username === regNo);
             const testData = globalFetchedData.test_scores.rows.find(row => row.username === regNo);
             const overallData = globalFetchedData.overall_scores.rows.find(row => row.username === regNo);
@@ -897,129 +955,164 @@ include 'filters.php';
             }
 
             // Display rank & department
-            document.getElementById('dispRegNo').innerText = regNo;
-            document.getElementById('dispDept').innerText = practiceData.department || "N/A";
-            document.getElementById('dispRank').innerText = overallData.overall_rank || "N/A";
+            $('#dispRegNo').text(regNo);
+            $('#dispDept').text(practiceData.department || "N/A");
+            $('#dispRank').text(overallData.overall_rank || "N/A");
 
-            const levels = ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"];
-            const subjects = ["PS", "DS", "DB", "OOP"];
+            // Dynamically determine available levels and subjects
+            const subjects = determineAvailableSubjects(practiceData, testData);
 
-            // Create main container
-            const progressContainer = document.getElementById('progressContainer');
-            progressContainer.innerHTML = ''; // Clear previous content
-            progressContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
+            // Clear and prepare progress container
+            const $progressContainer = $('#progressContainer')
+                .empty()
+                .addClass('grid grid-cols-1 md:grid-cols-2 gap-6');
 
             // Practice Scores Section
-            const practiceSection = document.createElement('div');
-            practiceSection.className = 'bg-white p-6 rounded-lg shadow-md';
-            practiceSection.innerHTML = `
-        <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Practice Scores</h3>
-    `;
+            const $practiceSection = $('<div>')
+                .addClass('bg-white p-6 rounded-lg shadow-md')
+                .append(
+                    $('<h3>')
+                        .addClass('text-xl font-bold text-gray-800 mb-4 text-center')
+                        .text('Practice Scores')
+                );
 
             // Test Scores Section
-            const testSection = document.createElement('div');
-            testSection.className = 'bg-white p-6 rounded-lg shadow-md';
-            testSection.innerHTML = `
-        <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Test Scores</h3>
-    `;
+            const $testSection = $('<div>')
+                .addClass('bg-white p-6 rounded-lg shadow-md')
+                .append(
+                    $('<h3>')
+                        .addClass('text-xl font-bold text-gray-800 mb-4 text-center')
+                        .text('Test Scores')
+                );
+
+            // Color palettes for practice and test scores
+            const practiceColors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'];
+            const testColors = ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-red-600'];
 
             // Process each subject
             subjects.forEach((subject, index) => {
                 // Practice Score Calculation
-                const practiceSubjectDetails = createSubjectScoreDetails(
+                const $practiceSubjectDetails = createSubjectScoreDetails(
                     subject,
                     'Practice',
-                    levels,
                     practiceData,
-                    courseTotalScores,
-                    ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'][index]
+                    practiceColors[index % practiceColors.length]
                 );
-                practiceSection.appendChild(practiceSubjectDetails);
+                $practiceSection.append($practiceSubjectDetails);
 
                 // Test Score Calculation
-                const testSubjectDetails = createSubjectScoreDetails(
+                const $testSubjectDetails = createSubjectScoreDetails(
                     subject,
                     'Test',
-                    levels,
                     testData,
-                    courseTotalScores,
-                    ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-red-600'][index]
+                    testColors[index % testColors.length]
                 );
-                testSection.appendChild(testSubjectDetails);
+                $testSection.append($testSubjectDetails);
             });
 
             // Append sections to container
-            progressContainer.appendChild(practiceSection);
-            progressContainer.appendChild(testSection);
+            $progressContainer.append($practiceSection, $testSection);
         }
 
-        function createSubjectScoreDetails(subject, type, levels, studentData, courseTotalScores, progressColor) {
-            // Create subject container
-            const subjectContainer = document.createElement('div');
-            subjectContainer.className = 'mb-6';
+        function determineAvailableSubjects(practiceData, testData) {
+            // Extract unique subjects from column names
+            const allColumns = Object.keys(practiceData);
+            const subjectColumns = allColumns.filter(col =>
+                /^L\d+\s*-\s*(Practice|Test)\s*-\s*(\w+)$/.test(col) &&
+                !col.includes('_diff')
+            );
 
-            // Calculate total scores
-            const subjectTotalScore = courseTotalScores
-                .filter(course => course.course_name.includes(`${type} - ${subject}`))
-                .reduce((sum, course) => sum + parseInt(course.total_score), 0);
+            // Extract unique subjects
+            const subjects = [...new Set(
+                subjectColumns.map(col => col.split('-')[2].trim())
+            )];
 
+            return subjects;
+        }
+
+        function determineAvailableLevelsForSubject(subject, type, studentData) {
+            // Find all columns for this subject and type
+            const subjectColumns = Object.keys(studentData).filter(col =>
+                col.includes(`- ${type} - ${subject}`) &&
+                !col.includes('_diff')
+            );
+
+            // Extract unique levels, sort them
+            const levels = [...new Set(
+                subjectColumns.map(col => col.split('-')[0].trim())
+            )].sort((a, b) => {
+                // Extract numeric part and sort
+                const numA = parseInt(a.slice(1));
+                const numB = parseInt(b.slice(1));
+                return numA - numB;
+            });
+
+            return levels;
+        }
+
+        function createSubjectScoreDetails(subject, type, studentData, progressColor) {
+            // Determine available levels for this specific subject
+            const levels = determineAvailableLevelsForSubject(subject, type, studentData);
+
+            // Calculate total scores (in percentage)
             const studentSubjectScores = levels.map(level => {
-                const score = parseInt(studentData[`${level} - ${type} - ${subject}`] || 0);
-                const totalLevelScore = courseTotalScores
-                    .find(course => course.course_name === `${level} - ${type} - ${subject}`)?.total_score || 0;
-                return { level, score, totalLevelScore };
+                const columnKey = `${level} - ${type} - ${subject}`;
+                const score = parseFloat(studentData[columnKey] || 0);
+                return { level, score };
             });
 
             const studentScore = studentSubjectScores.reduce((sum, item) => sum + item.score, 0);
-            const percentage = subjectTotalScore > 0
-                ? ((studentScore / subjectTotalScore) * 100).toFixed(2)
+            const percentage = studentSubjectScores.length > 0
+                ? (studentScore / studentSubjectScores.length).toFixed(2)
                 : 0;
 
+            // Create subject container
+            const $subjectContainer = $('<div>').addClass('mb-6');
+
             // Subject header
-            const subjectHeader = document.createElement('div');
-            subjectHeader.className = 'flex justify-between items-center mb-3';
-            subjectHeader.innerHTML = `
-        <h4 class="text-lg font-semibold text-gray-700">${subject} ${type}</h4>
-        <span class="text-sm font-medium text-gray-600">
-            ${studentScore} / ${subjectTotalScore} (${percentage}%)
-        </span>
-    `;
-            subjectContainer.appendChild(subjectHeader);
+            const $subjectHeader = $('<div>')
+                .addClass('flex justify-between items-center mb-3')
+                .append(
+                    $('<h4>')
+                        .addClass('text-lg font-semibold text-gray-700')
+                        .text(`${subject} ${type}`),
+                    $('<span>')
+                        .addClass('text-sm font-medium text-gray-600')
+                        .text(`${percentage}%`)
+                );
+            $subjectContainer.append($subjectHeader);
 
             // Progress bar
-            const progressContainer = document.createElement('div');
-            progressContainer.className = 'w-full bg-gray-200 rounded-full h-4 overflow-hidden mb-4';
-            const progressBar = document.createElement('div');
-            progressBar.className = `h-4 rounded-full ${progressColor} transition-all duration-500 ease-in-out`;
-            progressBar.style.width = `${percentage}%`;
-            progressContainer.appendChild(progressBar);
-            subjectContainer.appendChild(progressContainer);
+            const $progressContainer = $('<div>')
+                .addClass('w-full bg-gray-200 rounded-full h-4 overflow-hidden mb-4');
+            const $progressBar = $('<div>')
+                .addClass(`h-4 rounded-full ${progressColor} transition-all duration-500 ease-in-out`)
+                .css('width', `${percentage}%`);
+            $progressContainer.append($progressBar);
+            $subjectContainer.append($progressContainer);
 
             // Detailed level scores
-            const levelsDetailsContainer = document.createElement('div');
-            levelsDetailsContainer.className = 'space-y-2';
+            const $levelsDetailsContainer = $('<div>').addClass('space-y-2');
 
             studentSubjectScores.forEach(levelScore => {
-                const levelScoreItem = document.createElement('div');
-                levelScoreItem.className = 'flex justify-between items-center text-sm';
-
-                const percentage = levelScore.totalLevelScore > 0
-                    ? ((levelScore.score / levelScore.totalLevelScore) * 100).toFixed(2)
-                    : 0;
-
-                levelScoreItem.innerHTML = `
-            <span class="text-gray-600">${levelScore.level}</span>
-            <span class="text-gray-800">
-                ${levelScore.score} / ${levelScore.totalLevelScore} (${percentage}%)
-            </span>
-        `;
-                levelsDetailsContainer.appendChild(levelScoreItem);
+                const $levelScoreItem = $('<div>')
+                    .addClass('flex justify-between items-center text-sm')
+                    .append(
+                        $('<span>')
+                            .addClass('text-gray-600')
+                            .text(levelScore.level),
+                        $('<span>')
+                            .addClass('text-gray-800')
+                            .text(`${levelScore.score.toFixed(2)}%`)
+                    );
+                $levelsDetailsContainer.append($levelScoreItem);
             });
 
-            subjectContainer.appendChild(levelsDetailsContainer);
+            $subjectContainer.append($levelsDetailsContainer);
 
-            return subjectContainer;
+            return $subjectContainer;
         }
+
         // Function to load passwords table
         function loadPasswordsTable() {
             // Fetch password data from a separate endpoint
