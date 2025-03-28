@@ -26,7 +26,7 @@ function getScoresData()
         ]
     ];
 
-    $baseColumns = ["username", "institution", "department", "section", "batch", "programming", "graduation_year"];
+    $baseColumns = ["username", "firstname", "institution", "department", "section", "batch", "programming", "graduation_year"];
 
     // Get the latest and previous dates from the database
     $latestDate = getLatestDate($conn);
@@ -407,7 +407,7 @@ function getPreviousOverallScores($conn, $previousDate)
 function calculateRankings(&$data)
 {
     // Get course columns (excluding base columns)
-    $baseColumnCount = 7; // Number of base columns
+    $baseColumnCount = 8; // Number of base columns
     $courseColumns = [];
 
     // Filter out only the actual course columns (not the diff columns)
