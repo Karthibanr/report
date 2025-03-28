@@ -1,8 +1,8 @@
 <?php 
-global $SESSION;
-if (!isset($SESSION->username)){
-    header('Location: index.php');
-}
+// global $SESSION;
+// if (!isset($SESSION->username)){
+//     header('Location: index.php');
+// }
 include 'filters.php'; 
 ?>
 
