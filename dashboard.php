@@ -1,9 +1,9 @@
-<?php 
+<?php
 // global $SESSION;
 // if (!isset($SESSION->username)){
 //     header('Location: index.php');
 // }
-include 'filters.php'; 
+include 'filters.php';
 ?>
 
 <!DOCTYPE html>
@@ -679,6 +679,10 @@ include 'filters.php';
 
             tableContainer.append(tbody);
 
+            if ($.fn.DataTable.isDataTable(`#${tableId}-table`)) {
+                $(`#${tableId}-table`).DataTable().destroy();
+            }
+
             // Initialize DataTable with advanced configuration
             const dataTable = $(`#${tableId}-table`).DataTable({
                 scrollX: true,
@@ -739,10 +743,7 @@ include 'filters.php';
                         renderTable('test-scores', response.data.test_scores);
                         renderTable('overall-scores', response.data.overall_scores);
 
-                        // Render Practice Summary tab
                         renderSubjectSummaryTable('practice-summary', response.data.practice_scores);
-
-                        // Render Test Summary tab
                         renderSubjectSummaryTable('test-summary', response.data.test_scores);
 
                         hideLoading();
@@ -1113,7 +1114,6 @@ include 'filters.php';
             return $subjectContainer;
         }
 
-        // Function to load passwords table
         function loadPasswordsTable() {
             // Fetch password data from a separate endpoint
             $.ajax({
@@ -1197,7 +1197,6 @@ include 'filters.php';
             });
         }
 
-        // Helper functions for UI feedback
         function showLoading() {
             if ($('.loading-overlay').length === 0) {
                 $('body').append(`
@@ -1217,7 +1216,6 @@ include 'filters.php';
         function hideLoading() {
             $('.loading-overlay').remove();
         }
-
 
         function showError(message) {
             // Display error message to user
