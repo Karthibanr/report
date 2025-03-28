@@ -1,4 +1,9 @@
-<?php include 'filters.php'; ?>
+<?php 
+if (!isset($SESSION->userid)){
+    header('Location: index.php');
+}
+include 'filters.php'; 
+?>
 
 <!DOCTYPE html>
 <html lang="en">
