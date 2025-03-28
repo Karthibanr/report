@@ -1,5 +1,6 @@
 <?php 
-if (!isset($SESSION->userid)){
+global $SESSION;
+if (!isset($SESSION->username)){
     header('Location: index.php');
 }
 include 'filters.php'; 
