@@ -556,7 +556,7 @@ include 'filters.php';
             tableData.headers.forEach(header => {
                 // Exclude headers containing _diff
                 if (!header.includes('_diff')) {
-                    const match = header.match(/L(\d+) - Practice - (\w+)/);
+                    const match = header.match(/L(\d+) - Practice - (\w+)/) || header.match(/L(\d+) - Test - (\w+)/);
                     if (match) {
                         const [, level, subject] = match;
                         if (!subjects.includes(subject)) {
