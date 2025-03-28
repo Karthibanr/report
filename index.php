@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn {
-            background-color: #4CAF50;
+            background-color:rgb(14, 23, 105);
             color: white;
             padding: 12px;
             border: none;
@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .btn:hover {
-            background-color: #45a049;
+            background-color:rgb(14, 23, 99);
         }
 
         .error {
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         .forgot-password {
             font-size: 14px;
-            color: #4CAF50;
+            color:rgb(5, 22, 99);
             text-decoration: none;
             margin-top: 10px;
             display: inline-block;
