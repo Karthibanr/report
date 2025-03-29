@@ -310,6 +310,30 @@
         </div>
     </main>
 
+    <!-- Password Modal -->
+    <div id="passwordModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Password Required</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500 mb-4">Please enter the password to access the passwords tab.</p>
+                    <input type="password" id="passwordInput"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Enter password">
+                    <div id="passwordError" class="text-red-500 text-sm mt-2 hidden">Incorrect password. Please try
+                        again.</div>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="submitPassword"
+                        class="px-4 py-2 bg-primary-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">Submit</button>
+                    <button id="cancelPassword"
+                        class="mt-3 px-4 py-2 bg-white text-gray-500 text-base font-medium rounded-md w-full border border-gray-300 shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Info Modal -->
     <div id="infoModal" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog"
         aria-modal="true">
@@ -420,11 +444,79 @@
 
         // Dashboard Data Renderer
         $(document).ready(function () {
-            // Load initial data
+            // Initial data loading
             loadPasswordsTable();
             fetchAndRenderAllData();
 
-            $('.tab-btn').click(function () {
+
+            // Password protection for the Passwords tab
+            const passwordTabBtn = $('[data-tab="passwords"]');
+            const correctPassword = "admin123"; // Change this to your desired password
+
+            // Override click event for passwords tab
+            passwordTabBtn.off('click').on('click', function (e) {
+                e.preventDefault();
+
+                // Show custom password modal instead of browser prompt
+                $('#passwordModal').removeClass('hidden');
+                $('#passwordInput').val('').focus();
+                $('#passwordError').addClass('hidden');
+            });
+
+            // Submit password button click
+            $('#submitPassword').on('click', function () {
+                const enteredPassword = $('#passwordInput').val();
+
+                if (enteredPassword === correctPassword) {
+                    // Hide modal
+                    $('#passwordModal').addClass('hidden');
+
+                    // Handle tab switching
+                    $('.tab-btn').removeClass('text-primary-600 border-primary-500').addClass('text-gray-500 border-transparent');
+                    passwordTabBtn.addClass('text-primary-600 border-primary-500').removeClass('text-gray-500 border-transparent');
+
+                    // Hide all tab contents
+                    $('.tab-content').addClass('hidden');
+
+                    // Show the passwords tab
+                    $('#passwords').removeClass('hidden');
+
+                    // Adjust DataTable if it exists
+                    setTimeout(() => {
+                        if ($.fn.DataTable.isDataTable('#passwords-table')) {
+                            $('#passwords-table').DataTable().columns.adjust().draw();
+                        }
+                    }, 100);
+
+                    // Ensure password data is loaded
+                    loadPasswordsTable();
+                } else {
+                    // Show error message
+                    $('#passwordError').removeClass('hidden');
+                }
+            });
+
+            // Cancel button click
+            $('#cancelPassword').on('click', function () {
+                $('#passwordModal').addClass('hidden');
+            });
+
+            // Allow Enter key to submit password
+            $('#passwordInput').on('keypress', function (e) {
+                if (e.which === 13) { // Enter key
+                    $('#submitPassword').click();
+                }
+            });
+
+            // Close modal if clicking outside
+            $('#passwordModal').on('click', function (e) {
+                if (e.target === this) {
+                    $(this).addClass('hidden');
+                }
+            });
+
+            // Handle click for all other tabs using the existing code
+            $('.tab-btn').not('[data-tab="passwords"]').on('click', function () {
                 // Remove active class from all buttons
                 $('.tab-btn').removeClass('text-primary-600 border-primary-500').addClass('text-gray-500 border-transparent');
                 // Add active class to clicked button
@@ -445,7 +537,7 @@
                 }, 100);
             });
 
-            // Modal functionality
+            // Rest of your existing code
             $('#infoButton').click(function () {
                 $('#infoModal').removeClass('hidden');
             });
@@ -458,16 +550,12 @@
                 $('#infoModal, #logoutConfirmModal').addClass('hidden');
             });
 
-            // Filter form submission
             $('#filterForm').on('submit', function (e) {
                 e.preventDefault();
-
-                // Get form data
                 const formData = {};
                 $(this).serializeArray().forEach(item => {
                     if (item.value) formData[item.name] = item.value;
                 });
-                // Fetch and render data with filters
                 filterDataWithCriteria(formData);
             });
 
@@ -476,15 +564,13 @@
                 fetchAndRenderAllData();
             });
 
-            // Keypress event for Enter key
             $('#regSearch').on('keypress', function (e) {
-                if (e.which === 13) { // Enter key
+                if (e.which === 13) {
                     const regNo = $(this).val();
                     renderDetailedProgress(regNo);
                 }
             });
 
-            // New click event for the search button
             $('#searchButton').on('click', function () {
                 const regNo = $('#regSearch').val();
                 renderDetailedProgress(regNo);
@@ -1289,6 +1375,7 @@
             // Display error message to user
             alert(message);
         }
+
 
     </script>
 </body>
