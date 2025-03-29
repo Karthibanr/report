@@ -26,7 +26,7 @@
     <script src="https://cdn.tailwindcss.com"></script>  -->
 
     <!-- Tailwind CSS Local File (Dowloaded from https://cdn.tailwindcss.com) -->
-    <script src="tailwindcss.js"></script> 
+    <script src="tailwindcss.js"></script>
 
     <script>
         tailwind.config = {
@@ -245,35 +245,35 @@
                 <!-- Chart Tab -->
                 <div id="dispChart" class="tab-content hidden">
                     <div class="overflow-x-auto">
-                        <!-- Center input and button only on larger screens -->
-                        <div class="flex justify-center sm:w-1/2 mx-auto mb-4">
-                            <div class="flex flex-col sm:flex-row items-center w-full sm:space-x-4">
-                                <div class="flex-grow">
-                                    <input id="regSearch" type="text" placeholder="Enter Register No..."
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-                                </div>
-                                <div>
-                                    <button id="searchButton"
-                                        class="px-6 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50">
-                                        Search
-                                    </button>
-                                </div>
+                        <!-- Flex container for Student Details (Left) and Search Bar (Right) -->
+                        <div class="flex flex-col md:flex-row md:justify-between items-center mb-4 w-full">
+                            <!-- Student details (Initially hidden) - Now in a vertical format -->
+                            <div id="studentDetails" class="hidden flex-col space-y-1 md:space-y-2">
+                                <p class="text-gray-700"><strong>Name:</strong> <span id="dispName"
+                                        class="text-black"></span></p>
+                                <p class="text-gray-700"><strong>Department:</strong> <span id="dispDept"
+                                        class="text-black"></span></p>
+                                <p class="text-gray-700"><strong>Rank:</strong> <span id="dispRank"
+                                        class="text-black"></span></p>
+                            </div>
+
+                            <!-- Search Bar - Stays on the right on large screens and centers on mobile -->
+                            <div class="mt-3 md:mt-0 w-full md:w-auto flex items-center space-x-2 md:ml-auto">
+                                <input id="regSearch" type="text" placeholder="Enter Register No..."
+                                    class="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg" />
+                                <button id="searchButton"
+                                    class="px-6 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50">
+                                    Search
+                                </button>
                             </div>
                         </div>
 
-                        <div class="space-y-2 mb-4">
-                            <p class="text-gray-700"><strong>Register Number:</strong> <span id="dispRegNo"
-                                    class="text-black"></span></p>
-                            <p class="text-gray-700"><strong>Department:</strong> <span id="dispDept"
-                                    class="text-black"></span></p>
-                            <p class="text-gray-700"><strong>Rank:</strong> <span id="dispRank"
-                                    class="text-black"></span></p>
-                        </div>
-
+                        <!-- Progress container -->
                         <div id="progressContainer" class="grid grid-cols-1 gap-6">
                             <!-- Progress bars will be dynamically inserted here -->
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Passwords Tab -->
@@ -1004,9 +1004,10 @@
             }
 
             // Display rank & department
-            $('#dispRegNo').text(regNo);
+            $('#studentDetails').removeClass('hidden');
             $('#dispDept').text(practiceData.department || "N/A");
             $('#dispRank').text(overallData.overall_rank || "N/A");
+            $('#dispName').text(overallData.firstname || "N/A");
 
             // Dynamically determine available levels and subjects
             const subjects = determineAvailableSubjects(practiceData, testData);
