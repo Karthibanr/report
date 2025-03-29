@@ -22,8 +22,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS CDN 
+    <script src="https://cdn.tailwindcss.com"></script>  -->
+
+    <!-- Tailwind CSS Local File (Dowloaded from https://cdn.tailwindcss.com) -->
+    <script src="tailwindcss.js"></script> 
+
     <script>
         tailwind.config = {
             theme: {
@@ -46,6 +50,7 @@
             }
         }
     </script>
+
     <!-- jQuery CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- Chart.js for charts -->
@@ -437,7 +442,7 @@
                     if ($.fn.DataTable.isDataTable(tableId)) {
                         $(tableId).DataTable().columns.adjust().draw();
                     }
-                }, 100); // short delay allows DOM to finish rendering
+                }, 100);
             });
 
             // Modal functionality
@@ -452,8 +457,6 @@
             $('.close-modal').click(function () {
                 $('#infoModal, #logoutConfirmModal').addClass('hidden');
             });
-
-
 
             // Filter form submission
             $('#filterForm').on('submit', function (e) {
@@ -473,7 +476,7 @@
                 fetchAndRenderAllData();
             });
 
-            // Existing keypress event for Enter key
+            // Keypress event for Enter key
             $('#regSearch').on('keypress', function (e) {
                 if (e.which === 13) { // Enter key
                     const regNo = $(this).val();
@@ -628,13 +631,27 @@
                 // Process each subject
                 subjects.forEach(subject => {
                     // Process available levels for each subject
-                    subjectLevels[subject].forEach(level => {
+                    subjectLevels[subject].forEach((level, levelIndex) => {
                         // Check Practice keys
                         const practiceKey = `L${level} - Practice - ${subject}`;
                         const practiceDiffKey = `${practiceKey}_diff`;
 
-                        // Check if student completed the column
-                        if (rowData[practiceKey] && parseFloat(rowData[practiceKey]) > 0) {
+                        // Check if this is the highest level
+                        const isHighestLevel = levelIndex === subjectLevels[subject].length - 1;
+                        let shouldCount = false;
+
+                        if (isHighestLevel) {
+                            // For highest level, count if score > 0
+                            shouldCount = rowData[practiceKey] && parseFloat(rowData[practiceKey]) > 0;
+                        } else {
+                            // For all other levels, count if next level has score > 0
+                            const nextLevel = subjectLevels[subject][levelIndex + 1];
+                            const nextLevelKey = `L${nextLevel} - Practice - ${subject}`;
+
+                            shouldCount = rowData[nextLevelKey] && parseFloat(rowData[nextLevelKey]) > 0;
+                        }
+
+                        if (shouldCount) {
                             // Initialize the key if not exists
                             if (!aggregatedData[dept][practiceKey]) {
                                 aggregatedData[dept][practiceKey] = 0;
@@ -732,7 +749,6 @@
                 dataTable.columns.adjust();
             });
         }
-
         function fetchAndRenderAllData() {
             // Show loading indicator
             showLoading();
