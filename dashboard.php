@@ -445,13 +445,11 @@
         // Dashboard Data Renderer
         $(document).ready(function () {
             // Initial data loading
-            loadPasswordsTable();
             fetchAndRenderAllData();
-
 
             // Password protection for the Passwords tab
             const passwordTabBtn = $('[data-tab="passwords"]');
-            const correctPassword = "admin123"; // Change this to your desired password
+            const correctPassword = "admin123";
 
             // Override click event for passwords tab
             passwordTabBtn.off('click').on('click', function (e) {
@@ -560,7 +558,6 @@
             });
 
             $('#previousDate').on('change', function () {
-                const previousDate = $(this).val();
                 fetchAndRenderAllData();
             });
 
