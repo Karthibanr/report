@@ -918,6 +918,7 @@
             // Columns to hide
             const columnsToHide = [
                 'institution',
+                'firstname',
                 'department',
                 'section',
                 'batch',
