@@ -557,17 +557,23 @@
             // Clear existing table content
             tableContainer.empty();
 
-            // Dynamically extract subjects and levels from headers
+            // Dynamically extract subjects, assessment types, and levels from headers
             const subjects = [];
             const subjectLevels = {};
+            const assessmentTypes = new Set(); // To track Practice vs Test
 
-            // Find unique subjects and their levels
+            // Find unique subjects, assessment types, and their levels
             tableData.headers.forEach(header => {
                 // Exclude headers containing _diff
                 if (!header.includes('_diff')) {
-                    const match = header.match(/L(\d+) - Practice - (\w+)/) || header.match(/L(\d+) - Test - (\w+)/);
+                    // Match both Practice and Test patterns
+                    const match = header.match(/L(\d+) - (Practice|Test) - (\w+)/);
                     if (match) {
-                        const [, level, subject] = match;
+                        const [, level, assessmentType, subject] = match;
+
+                        // Add assessment type to set
+                        assessmentTypes.add(assessmentType);
+
                         if (!subjects.includes(subject)) {
                             subjects.push(subject);
                             subjectLevels[subject] = [];
@@ -584,18 +590,24 @@
                 subjectLevels[subject].sort((a, b) => parseInt(a) - parseInt(b));
             });
 
+            // Convert assessment types to array for iteration
+            const assessmentTypesArray = Array.from(assessmentTypes);
+
             // Create table header
             const thead = $('<thead>');
             const headerRow = $('<tr>');
 
             // Add Department and Total Students headers
-            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Department'));
-            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0 z-30').text('Total Students'));
+            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0').text('Department'));
+            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0').text('Total Students'));
 
-            // Add subject-level headers
+            // Add subject-level-assessment headers
             subjects.forEach(subject => {
                 subjectLevels[subject].forEach(level => {
-                    headerRow.append($('<th>').addClass('border px-4 py-2').text(`${subject} L${level}`));
+                    assessmentTypesArray.forEach(assessmentType => {
+                        headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0')
+                            .text(`${subject} L${level} ${assessmentType}`));
+                    });
                 });
             });
 
@@ -632,39 +644,41 @@
                 subjects.forEach(subject => {
                     // Process available levels for each subject
                     subjectLevels[subject].forEach((level, levelIndex) => {
-                        // Check Practice keys
-                        const practiceKey = `L${level} - Practice - ${subject}`;
-                        const practiceDiffKey = `${practiceKey}_diff`;
+                        // Process each assessment type (Practice and Test)
+                        assessmentTypesArray.forEach(assessmentType => {
+                            const assessmentKey = `L${level} - ${assessmentType} - ${subject}`;
+                            const assessmentDiffKey = `${assessmentKey}_diff`;
 
-                        // Check if this is the highest level
-                        const isHighestLevel = levelIndex === subjectLevels[subject].length - 1;
-                        let shouldCount = false;
+                            // Check if this is the highest level
+                            const isHighestLevel = levelIndex === subjectLevels[subject].length - 1;
+                            let shouldCount = false;
 
-                        if (isHighestLevel) {
-                            // For highest level, count if score > 0
-                            shouldCount = rowData[practiceKey] && parseFloat(rowData[practiceKey]) > 0;
-                        } else {
-                            // For all other levels, count if next level has score > 0
-                            const nextLevel = subjectLevels[subject][levelIndex + 1];
-                            const nextLevelKey = `L${nextLevel} - Practice - ${subject}`;
+                            if (isHighestLevel) {
+                                // For highest level, count if score > 0
+                                shouldCount = rowData[assessmentKey] && parseFloat(rowData[assessmentKey]) > 0;
+                            } else {
+                                // For all other levels, count if next level has score > 0
+                                const nextLevel = subjectLevels[subject][levelIndex + 1];
+                                const nextLevelKey = `L${nextLevel} - ${assessmentType} - ${subject}`;
 
-                            shouldCount = rowData[nextLevelKey] && parseFloat(rowData[nextLevelKey]) > 0;
-                        }
-
-                        if (shouldCount) {
-                            // Initialize the key if not exists
-                            if (!aggregatedData[dept][practiceKey]) {
-                                aggregatedData[dept][practiceKey] = 0;
-                                aggregatedCompletedYesterday[dept][practiceKey] = 0;
+                                shouldCount = rowData[nextLevelKey] && parseFloat(rowData[nextLevelKey]) > 0;
                             }
-                            aggregatedData[dept][practiceKey]++;
 
-                            // Check if completed in previous day (diff is positive)
-                            if (rowData[practiceDiffKey] && parseFloat(rowData[practiceDiffKey]) > 0) {
-                                aggregatedCompletedYesterday[dept][practiceKey]++;
-                                departmentCompletedYesterday[dept]++;
+                            if (shouldCount) {
+                                // Initialize the key if not exists
+                                if (!aggregatedData[dept][assessmentKey]) {
+                                    aggregatedData[dept][assessmentKey] = 0;
+                                    aggregatedCompletedYesterday[dept][assessmentKey] = 0;
+                                }
+                                aggregatedData[dept][assessmentKey]++;
+
+                                // Check if completed in previous day (diff is positive)
+                                if (rowData[assessmentDiffKey] && parseFloat(rowData[assessmentDiffKey]) > 0) {
+                                    aggregatedCompletedYesterday[dept][assessmentKey]++;
+                                    departmentCompletedYesterday[dept]++;
+                                }
                             }
-                        }
+                        });
                     });
                 });
             });
@@ -676,24 +690,27 @@
 
                 // Department column with total students
                 const totalStudents = departmentTotals[dept] || 0;
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white z-20 whitespace-nowrap').text(dept));
-                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white z-20 text-center whitespace-nowrap').text(totalStudents));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white whitespace-nowrap').text(dept));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white text-center whitespace-nowrap').text(totalStudents));
 
                 // Subject columns
                 subjects.forEach(subject => {
                     // Process available levels for each subject
                     subjectLevels[subject].forEach(level => {
-                        const practiceKey = `L${level} - Practice - ${subject}`;
+                        // Process each assessment type (Practice and Test)
+                        assessmentTypesArray.forEach(assessmentType => {
+                            const assessmentKey = `L${level} - ${assessmentType} - ${subject}`;
 
-                        // Get value
-                        const practiceValue = aggregatedData[dept][practiceKey] || 0;
-                        const practiceCompletedYesterday = aggregatedCompletedYesterday[dept][practiceKey] || 0;
+                            // Get value
+                            const assessmentValue = aggregatedData[dept][assessmentKey] || 0;
+                            const assessmentCompletedYesterday = aggregatedCompletedYesterday[dept][assessmentKey] || 0;
 
-                        row.append($('<td>').addClass('border px-4 py-2 text-center whitespace-nowrap')
-                            .html(practiceCompletedYesterday > 0
-                                ? `${practiceValue} <span class="text-sm text-green-600">(+${practiceCompletedYesterday})</span>`
-                                : `${practiceValue}`)
-                        );
+                            row.append($('<td>').addClass('border px-4 py-2 text-center whitespace-nowrap')
+                                .html(assessmentCompletedYesterday > 0
+                                    ? `${assessmentValue} <span class="text-sm text-green-600">(+${assessmentCompletedYesterday})</span>`
+                                    : `${assessmentValue}`)
+                            );
+                        });
                     });
                 });
 
@@ -749,6 +766,7 @@
                 dataTable.columns.adjust();
             });
         }
+
         function fetchAndRenderAllData() {
             // Show loading indicator
             showLoading();
@@ -928,7 +946,7 @@
                             sortByDiff = !sortByDiff;
 
                             // Update button text
-                            $(node).text(sortByDiff ? 'Sort by Difference Values' : 'Sort: Original Values');
+                            $(node).text(sortByDiff ? 'Sort: Difference Values' : 'Sort: Original Values');
 
                             // Force redraw of the entire table to apply new sorting
                             dt.rows().invalidate('data').draw();
@@ -979,6 +997,7 @@
                 dataTable.columns.adjust();
             });
         }
+
         // Function to render each table with DataTables
         function formatHeaderText(header) {
             // Replace hyphens with spaces, swap words, and capitalize first letter of each word
