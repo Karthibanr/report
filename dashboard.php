@@ -1326,17 +1326,11 @@
 
                     // Create export buttons manually
                     const excelButton = $('<button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2">Export to Excel</button>');
-                    const pdfButton = $('<button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Export to PDF</button>');
-
-                    $('#export-buttons').append(excelButton, pdfButton);
+                    $('#export-buttons').append(excelButton);
 
                     // Add click handlers for export buttons
                     excelButton.on('click', function () {
                         table.button('.buttons-excel').trigger();
-                    });
-
-                    pdfButton.on('click', function () {
-                        table.button('.buttons-pdf').trigger();
                     });
 
                     // Add hidden buttons for actual export functionality
@@ -1351,15 +1345,6 @@
                                     columns: ':visible'
                                 }
                             },
-                            {
-                                extend: 'pdf',
-                                text: 'Export to PDF',
-                                className: 'buttons-pdf hidden',
-                                title: 'Passwords Data',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }
                         ]
                     });
 
