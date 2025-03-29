@@ -1301,41 +1301,11 @@
                         $('#table-controls').append('<div id="search-container"></div><div id="export-buttons" class="flex"></div>');
                     }
 
-                    // Initialize DataTable with buttons
+                    // Initialize DataTable with custom DOM positioning
                     const table = $('#passwords-table').DataTable({
-                        dom: 'Bfrt', // B for buttons, f for filtering, r for processing, t for table
-                        buttons: [
-                            {
-                                extend: 'excel',
-                                text: 'Export to Excel',
-                                className: 'hidden excel-button',
-                                title: 'Passwords Data',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            },
-                            {
-                                extend: 'pdf',
-                                text: 'Export to PDF',
-                                className: 'hidden pdf-button',
-                                title: 'Passwords Data',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            },
-                            {
-                                extend: 'csv',
-                                text: 'Export to CSV',
-                                className: 'hidden csv-button',
-                                title: 'Passwords Data',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }
-                        ],
+                        dom: 't', // Only show the table, we'll handle the rest manually
                         paging: false,
                         responsive: true,
-                        searching: true,
                         language: {
                             infoEmpty: "No data available"
                         },
@@ -1345,12 +1315,16 @@
                         }
                     });
 
-                    // Move DataTable's search input to our custom container
-                    $('.dataTables_filter').appendTo('#search-container');
-                    $('.dataTables_filter label').addClass('flex items-center');
-                    $('.dataTables_filter input').addClass('ml-2 px-3 py-2 border rounded');
+                    // Create and append search input manually
+                    const searchInput = $('<input type="search" class="form-control mr-4 px-3 py-2 border rounded" placeholder="Search...">');
+                    $('#search-container').append(searchInput);
 
-                    // Create custom export buttons
+                    // Add event listener for search
+                    searchInput.on('keyup', function () {
+                        table.search(this.value).draw();
+                    });
+
+                    // Create export buttons manually
                     const excelButton = $('<button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2">Export to Excel</button>');
                     const pdfButton = $('<button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Export to PDF</button>');
 
@@ -1358,15 +1332,38 @@
 
                     // Add click handlers for export buttons
                     excelButton.on('click', function () {
-                        $('.buttons-excel').click();
+                        table.button('.buttons-excel').trigger();
                     });
 
                     pdfButton.on('click', function () {
-                        $('.buttons-pdf').click();
+                        table.button('.buttons-pdf').trigger();
                     });
 
-                    // Hide the default buttons container
-                    $('.dt-buttons').addClass('hidden');
+                    // Add hidden buttons for actual export functionality
+                    new $.fn.dataTable.Buttons(table, {
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                text: 'Export to Excel',
+                                className: 'buttons-excel hidden',
+                                title: 'Passwords Data',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            },
+                            {
+                                extend: 'pdf',
+                                text: 'Export to PDF',
+                                className: 'buttons-pdf hidden',
+                                title: 'Passwords Data',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }
+                        ]
+                    });
+
+                    table.buttons().container().appendTo('body');
                 },
                 error: function () {
                     const tableBody = $('#passwords-table tbody');
