@@ -382,12 +382,12 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <form method="POST" action="#">    
-                    <button type="submit" name="confirmLogout"
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Logout
-                    </button>
-                </form>
+                    <form method="POST" action="#">
+                        <button type="submit" name="confirmLogout"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Logout
+                        </button>
+                    </form>
                     <button type="button"
                         class="close-modal mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Cancel
@@ -808,6 +808,9 @@
                 'graduation_year'
             ];
 
+            // Track sorting mode - start with original values
+            let sortByDiff = false;
+
             // Helper function to get numeric diff value
             const getNumericDiffValue = function (diffValue) {
                 return diffValue !== null && diffValue !== undefined
@@ -832,9 +835,15 @@
                             return `${data} <span style="color: ${color}; font-weight: bold;">(${formattedDiff})</span>`;
                         }
                     }
-                    // For sorting and filtering, return the numeric diff value
+                    // For sorting, return different values based on sortByDiff flag
                     if (type === 'sort') {
-                        return getNumericDiffValue(row[diffHeader]) || 0;
+                        if (sortByDiff) {
+                            return getNumericDiffValue(row[diffHeader]) || 0;
+                        } else {
+                            // Try to parse as number, fall back to original
+                            const numValue = parseFloat(data);
+                            return !isNaN(numValue) ? numValue : data;
+                        }
                     }
                     return data;
                 };
@@ -860,7 +869,7 @@
                 if (tableData.headers.includes(diffHeader)) {
                     columnDefinition.render = renderDiffColumn(header);
 
-                    // Add a column definition for proper sorting of diff columns
+                    // Add a column definition for sorting
                     columnDefs.push({
                         targets: index,
                         type: 'num',
@@ -875,7 +884,7 @@
             const dataTable = tableContainer.DataTable({
                 data: tableData.rows,
                 columns: columns,
-                columnDefs: columnDefs, // Add column definitions for sorting
+                columnDefs: columnDefs,
                 responsive: false,
                 scrollX: true,
                 scrollY: '400px',
@@ -894,6 +903,20 @@
                         extend: 'csv',
                         className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
                         text: 'Export CSV'
+                    },
+                    {
+                        text: 'Sort: Original Values',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2 sort-toggle-btn',
+                        action: function (e, dt, node, config) {
+                            // Toggle sort mode
+                            sortByDiff = !sortByDiff;
+
+                            // Update button text
+                            $(node).text(sortByDiff ? 'Sort by Difference Values' : 'Sort: Original Values');
+
+                            // Force redraw of the entire table to apply new sorting
+                            dt.rows().invalidate('data').draw();
+                        }
                     }
                 ],
                 language: {
@@ -913,6 +936,9 @@
                     $('.dt-buttons').addClass('mb-4');
                     $(`.dataTables_wrapper`).css('overflow-x', 'auto');
                     this.api().columns.adjust().draw();
+
+                    // Add tooltip to explain sorting toggle
+                    $('.sort-toggle-btn').attr('title', 'Toggle between sorting by original values and difference values');
                 }
             });
 
@@ -937,7 +963,7 @@
                 dataTable.columns.adjust();
             });
         }
-        // Format header text for better readability
+        // Function to render each table with DataTables
         function formatHeaderText(header) {
             // Replace hyphens with spaces, swap words, and capitalize first letter of each word
             return header
