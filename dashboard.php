@@ -1292,9 +1292,9 @@
                 `);
                     });
 
-                    // Initialize DataTable
+                    // Initialize DataTable without pagination
                     const table = $('#passwords-table').DataTable({
-                        dom: '<"flex justify-between items-center mb-4"<"flex-1"f><"flex"B>>rt<"flex justify-between"<"flex-1"i><"flex"p>>',
+                        dom: '<"flex justify-between items-center mb-4"Bf>rt',
                         buttons: [
                             {
                                 extend: 'excel',
@@ -1315,14 +1315,13 @@
                                 }
                             }
                         ],
-                        pageLength: 25,
+                        paging: false, 
                         responsive: true,
                         language: {
                             search: "Search:",
                             lengthMenu: "Show _MENU_ entries",
-                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                            infoEmpty: "Showing 0 to 0 of 0 entries",
-                            infoFiltered: "(filtered from _MAX_ total entries)"
+                            info: "Showing _TOTAL_ entries",
+                            infoEmpty: "No data available"
                         },
                         drawCallback: function () {
                             $('#passwords-table thead th').addClass('px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider');
@@ -1332,7 +1331,7 @@
 
                     // Ensure the export buttons container exists only once
                     if ($('#datatable-buttons').length === 0) {
-                        $('#passwords-table').before('<div id="datatable-buttons" class="mb-4 flex"></div>');
+                        $('#passwords-table').before('<div id="datatable-buttons" class="mb-4 flex items-center"></div>');
                     } else {
                         $('#datatable-buttons').empty(); // Clear existing buttons before appending new ones
                     }
