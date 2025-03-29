@@ -1292,35 +1292,21 @@
                 `);
                     });
 
-                    // Initialize DataTable without pagination
+                    // Create a custom container for search and export buttons
+                    if ($('#table-controls').length === 0) {
+                        $('#passwords-table').before('<div id="table-controls" class="flex justify-between items-center mb-4"></div>');
+                        $('#table-controls').append('<div id="search-container"></div><div id="export-buttons" class="flex"></div>');
+                    } else {
+                        $('#table-controls').empty();
+                        $('#table-controls').append('<div id="search-container"></div><div id="export-buttons" class="flex"></div>');
+                    }
+
+                    // Initialize DataTable with custom DOM positioning
                     const table = $('#passwords-table').DataTable({
-                        dom: '<"flex justify-between items-center mb-4"Bf>rt',
-                        buttons: [
-                            {
-                                extend: 'excel',
-                                text: 'Export to Excel',
-                                className: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2',
-                                title: 'Passwords Data',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            },
-                            {
-                                extend: 'pdf',
-                                text: 'Export to PDF',
-                                className: 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500',
-                                title: 'Passwords Data',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }
-                        ],
-                        paging: false, 
+                        dom: 't', // Only show the table, we'll handle the rest manually
+                        paging: false,
                         responsive: true,
                         language: {
-                            search: "Search:",
-                            lengthMenu: "Show _MENU_ entries",
-                            info: "Showing _TOTAL_ entries",
                             infoEmpty: "No data available"
                         },
                         drawCallback: function () {
@@ -1329,15 +1315,55 @@
                         }
                     });
 
-                    // Ensure the export buttons container exists only once
-                    if ($('#datatable-buttons').length === 0) {
-                        $('#passwords-table').before('<div id="datatable-buttons" class="mb-4 flex items-center"></div>');
-                    } else {
-                        $('#datatable-buttons').empty(); // Clear existing buttons before appending new ones
-                    }
+                    // Create and append search input manually
+                    const searchInput = $('<input type="search" class="form-control mr-4 px-3 py-2 border rounded" placeholder="Search...">');
+                    $('#search-container').append(searchInput);
 
-                    // Move buttons to custom container
-                    table.buttons().container().appendTo('#datatable-buttons');
+                    // Add event listener for search
+                    searchInput.on('keyup', function () {
+                        table.search(this.value).draw();
+                    });
+
+                    // Create export buttons manually
+                    const excelButton = $('<button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2">Export to Excel</button>');
+                    const pdfButton = $('<button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Export to PDF</button>');
+
+                    $('#export-buttons').append(excelButton, pdfButton);
+
+                    // Add click handlers for export buttons
+                    excelButton.on('click', function () {
+                        table.button('.buttons-excel').trigger();
+                    });
+
+                    pdfButton.on('click', function () {
+                        table.button('.buttons-pdf').trigger();
+                    });
+
+                    // Add hidden buttons for actual export functionality
+                    new $.fn.dataTable.Buttons(table, {
+                        buttons: [
+                            {
+                                extend: 'excel',
+                                text: 'Export to Excel',
+                                className: 'buttons-excel hidden',
+                                title: 'Passwords Data',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            },
+                            {
+                                extend: 'pdf',
+                                text: 'Export to PDF',
+                                className: 'buttons-pdf hidden',
+                                title: 'Passwords Data',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }
+                        ]
+                    });
+
+                    table.buttons().container().appendTo('body');
                 },
                 error: function () {
                     const tableBody = $('#passwords-table tbody');
