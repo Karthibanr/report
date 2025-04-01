@@ -492,8 +492,9 @@
             // Submit password button click
             $('#submitPassword').on('click', async function () {
                 const enteredPassword = $('#passwordInput').val();
+                const enteredPasswordHash = await sha256(enteredPassword);  // Hash the entered password asynchronously
 
-                if (enteredPassword === correctPassword) {
+                if (enteredPasswordHash === correctPasswordHash) {
                     // Hide modal
                     $('#passwordModal').addClass('hidden');
 
