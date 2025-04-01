@@ -768,7 +768,7 @@
 
                             if (isHighestLevel) {
                                 // For highest level, count if score > 0
-                                shouldCount = rowData[assessmentKey] && parseFloat(rowData[assessmentKey]) > 0;
+                                shouldCount = rowData[assessmentKey] && parseFloat(rowData[assessmentKey]) > 80;
                             } else {
                                 // For all other levels, count if next level has score > 0
                                 const nextLevel = subjectLevels[subject][levelIndex + 1];
@@ -994,7 +994,7 @@
 
                             if (isHighestLevel) {
                                 // For highest level, count if score > 0
-                                shouldCount = rowData[assessmentKey] && parseFloat(rowData[assessmentKey]) > 0;
+                                shouldCount = rowData[assessmentKey] && parseFloat(rowData[assessmentKey]) > 80;
                             } else {
                                 // For all other levels, count if next level has score > 0
                                 const nextLevel = subjectLevels[subject][levelIndex + 1];
