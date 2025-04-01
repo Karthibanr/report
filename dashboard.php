@@ -655,13 +655,14 @@
 
             renderSubjectSummaryTable('practice-summary', filteredPractice);
             renderSubjectSummaryTable('test-summary', filteredTest);
+
             renderBatchSummaryTable('batch-practice-summary', filteredPractice);
             renderBatchSummaryTable('batch-test-summary', filteredTest);
+
+            renderRankTable('overall-scores', filteredOverall);
+
             renderTable('practice-scores', filteredPractice);
             renderTable('test-scores', filteredTest);
-            if (filteredOverall) {
-                renderTable('overall-scores', filteredOverall);
-            }
         }
 
         function renderSubjectSummaryTable(tableId, tableData) {
@@ -1130,7 +1131,8 @@
                         globalFetchedData = response.data; // store data globally
                         renderTable('practice-scores', response.data.practice_scores);
                         renderTable('test-scores', response.data.test_scores);
-                        renderTable('overall-scores', response.data.overall_scores);
+
+                        renderRankTable('overall-scores', response.data.overall_scores);
 
                         renderSubjectSummaryTable('practice-summary', response.data.practice_scores);
                         renderSubjectSummaryTable('test-summary', response.data.test_scores);
@@ -1219,7 +1221,7 @@
                                 ? `+${numericDiffValue}`
                                 : `${numericDiffValue}`;
                             const color = getDiffColor(Math.abs(numericDiffValue));
-                            return `${data} <span style="color: ${color}; font-weight: bold;">(${formattedDiff})</span>`;
+                            return `${data} <span style="color: ${color};">(${formattedDiff})</span>`;
                         }
                     }
                     // For sorting, return different values based on sortByDiff flag
@@ -1363,6 +1365,299 @@
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .reverse() // Swap words by reversing the array
                 .join(' ');
+        }
+
+        function renderRankTable(tableId, tableData) {
+            if (!tableData || !tableData.headers || !tableData.rows) {
+                return;
+            }
+
+            const tableContainer = $(`#${tableId}-table`);
+
+            // Destroy existing DataTable if it exists
+            if ($.fn.DataTable.isDataTable(tableContainer)) {
+                tableContainer.DataTable().destroy();
+            }
+
+            tableContainer.empty();
+
+            // Columns to hide
+            const columnsToHide = [
+                'institution',
+                'firstname',
+                'department',
+                'section',
+                'batch',
+                'programming',
+                'graduation_year'
+            ];
+
+            // Columns to exclude from rank calculation (non-score columns)
+            const excludeFromRankCalc = [
+                'username',
+                'institution',
+                'firstname',
+                'department',
+                'section',
+                'batch',
+                'programming',
+                'graduation_year',
+                'overall_average' // Will add this column later
+            ];
+
+            // Track sorting mode - start with original values
+            let sortByDiff = false;
+
+            // Helper function to get numeric diff value
+            const getNumericDiffValue = function (diffValue) {
+                return diffValue !== null && diffValue !== undefined
+                    ? Number(diffValue)
+                    : null;
+            };
+
+            // Render diff column with color-coding
+            const renderDiffColumn = function (header) {
+                const diffHeader = `${header}_diff`;
+                return function (data, type, row) {
+                    if (type === 'display') {
+                        const diffValue = row[diffHeader];
+                        const numericDiffValue = getNumericDiffValue(diffValue);
+
+                        // Render only if we have a meaningful numeric value
+                        if (numericDiffValue !== null && !isNaN(numericDiffValue) && numericDiffValue !== 0) {
+                            const formattedDiff = numericDiffValue > 0
+                                ? `+${numericDiffValue}`
+                                : `${numericDiffValue}`;
+                            const color = getDiffColor(Math.abs(numericDiffValue));
+                            return `${data} <span style="color: ${color};">(${formattedDiff})</span>`;
+                        }
+                    }
+                    // For sorting, return different values based on sortByDiff flag
+                    if (type === 'sort') {
+                        if (sortByDiff) {
+                            return getNumericDiffValue(row[diffHeader]) || 0;
+                        } else {
+                            // Try to parse as number, fall back to original
+                            const numValue = parseFloat(data);
+                            return !isNaN(numValue) ? numValue : data;
+                        }
+                    }
+                    return data;
+                };
+            };
+
+            // Prepare columns and column definitions
+            const columns = [];
+            const columnDefs = [];
+
+            // Filter out diff headers to avoid duplicate columns
+            const headers = tableData.headers.filter(header => !header.includes('_diff'));
+
+            // Calculate ranks for each relevant column
+            const rowsArray = Array.isArray(tableData.rows) ? tableData.rows : [tableData.rows];
+            const scoreColumns = headers.filter(header => !excludeFromRankCalc.includes(header));
+
+            // Process score values for ranking
+            scoreColumns.forEach(column => {
+                // Extract values for this column from all rows
+                const values = rowsArray.map(row => {
+                    const value = row[column];
+                    return value !== null && value !== undefined ? parseFloat(value) : null;
+                });
+
+                // Sort values in descending order (higher scores are better)
+                const sortedValues = [...values].filter(v => v !== null && !isNaN(v)).sort((a, b) => b - a);
+
+                // Create a map of value to rank
+                const rankMap = {};
+                sortedValues.forEach((value, index) => {
+                    if (!(value in rankMap)) {
+                        rankMap[value] = index + 1;
+                    }
+                });
+
+                // Assign ranks to rows
+                rowsArray.forEach(row => {
+                    const value = row[column];
+                    const numValue = value !== null && value !== undefined ? parseFloat(value) : null;
+
+                    // Create rank field with column name plus _rank suffix
+                    row[`${column}_rank`] = (numValue !== null && !isNaN(numValue)) ? rankMap[numValue] : null;
+                });
+            });
+
+            // Calculate overall average score (not rank) for each student
+            rowsArray.forEach(row => {
+                let totalScore = 0;
+                let countScore = 0;
+
+                scoreColumns.forEach(column => {
+                    const score = row[column];
+                    if (score !== null && score !== undefined && !isNaN(parseFloat(score))) {
+                        totalScore += parseFloat(score);
+                        countScore++;
+                    }
+                });
+
+                row['overall_average'] = countScore > 0 ? (totalScore / countScore).toFixed(2) : null;
+            });
+
+            // Calculate overall rank based on overall_average score (higher score = better rank)
+            const overallValues = rowsArray.map(row => row['overall_average'] !== null ? parseFloat(row['overall_average']) : null);
+            const sortedOverallValues = [...overallValues].filter(v => v !== null && !isNaN(v)).sort((a, b) => b - a); // Descending order
+            const overallRankMap = {};
+            sortedOverallValues.forEach((value, index) => {
+                if (!(value in overallRankMap)) {
+                    overallRankMap[value] = index + 1;
+                }
+            });
+
+            // Assign overall ranks
+            rowsArray.forEach(row => {
+                const value = row['overall_average'];
+                const numValue = value !== null && value !== undefined ? parseFloat(value) : null;
+                row['overall_rank'] = (numValue !== null && !isNaN(numValue)) ? overallRankMap[numValue] : null;
+            });
+
+            // Add overall_average and overall_rank to headers if not already present
+            if (!headers.includes('overall_average')) {
+                headers.push('overall_average');
+            }
+            if (!headers.includes('overall_rank')) {
+                headers.push('overall_rank');
+            }
+
+            headers.forEach((header, index) => {
+                const diffHeader = `${header}_diff`;
+
+                const columnDefinition = {
+                    data: header,
+                    title: header === 'overall_average' ? 'Overall Average Score' :
+                        header === 'overall_rank' ? 'Overall Rank' :
+                            formatHeaderText(header),
+                    visible: !columnsToHide.includes(header)
+                };
+
+                // If there's a corresponding diff header, add custom rendering and sorting
+                if (tableData.headers.includes(diffHeader)) {
+                    columnDefinition.render = renderDiffColumn(header);
+
+                    // Add a column definition for sorting
+                    columnDefs.push({
+                        targets: index,
+                        type: 'num',
+                        render: renderDiffColumn(header)
+                    });
+                }
+
+                // For score columns, add rank info in display
+                if (scoreColumns.includes(header)) {
+                    const originalRender = columnDefinition.render || ((data, type) => type === 'sort' ? parseFloat(data) || 0 : data);
+
+                    columnDefinition.render = function (data, type, row) {
+                        // First apply any existing render function
+                        const renderedData = originalRender(data, type, row);
+
+                        if (type === 'display' && row[`${header}_rank`] !== null) {
+                            return `${renderedData} <span class="text-xs text-gray-600 ml-1">(${row[`${header}_rank`]})</span>`;
+                        }
+
+                        return renderedData;
+                    };
+                }
+
+                columns.push(columnDefinition);
+            });
+
+            // Initialize DataTable
+            const dataTable = tableContainer.DataTable({
+                data: rowsArray,
+                columns: columns,
+                columnDefs: columnDefs,
+                responsive: false,
+                scrollX: true,
+                scrollY: '400px',
+                scrollCollapse: true,
+                paging: true,
+                scroller: true,
+                dom: 'Bfrtip',
+                deferRender: true,
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
+                        text: 'Toggle Columns'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                        text: 'Export CSV'
+                    },
+                    {
+                        text: 'Sort: Original Values',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2 sort-toggle-btn',
+                        action: function (e, dt, node, config) {
+                            // Toggle sort mode
+                            sortByDiff = !sortByDiff;
+
+                            // Update button text
+                            $(node).text(sortByDiff ? 'Sort: Difference Values' : 'Sort: Original Values');
+
+                            // Force redraw of the entire table to apply new sorting
+                            dt.rows().invalidate('data').draw();
+                        }
+                    },
+                    {
+                        text: 'Sort by Overall Rank',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                        action: function (e, dt, node, config) {
+                            dt.order([headers.indexOf('overall_average'), 'asc']).draw();
+                        }
+                    }
+                ],
+                language: {
+                    search: "Filter:",
+                    info: "Showing _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                },
+                fixedHeader: true,
+                fixedColumns: {
+                    leftColumns: 1
+                },
+                createdRow: function (row, data, dataIndex) {
+                    $(row).addClass('hover:bg-green-100'); // Tailwind hover effect for row
+                },
+                initComplete: function () {
+                    $('.dt-buttons').addClass('mb-4');
+                    $(`.dataTables_wrapper`).css('overflow-x', 'auto');
+                    this.api().columns.adjust().draw();
+
+                    // Add tooltip to explain sorting toggle
+                    $('.sort-toggle-btn').attr('title', 'Toggle between sorting by original values and difference values');
+                }
+            });
+
+            // Add custom search input above the table
+            const searchContainer = $('<div>').addClass('mb-4 flex items-center');
+            const searchLabel = $('<label>').addClass('mr-2 text-sm text-gray-700').text('Search:');
+            const searchInput = $('<input>')
+                .addClass('border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500')
+                .attr('type', 'search')
+                .attr('placeholder', 'Type to filter...');
+
+            searchContainer.append(searchLabel, searchInput);
+            tableContainer.before(searchContainer);
+
+            // Bind search input to DataTable
+            searchInput.on('keyup', function () {
+                dataTable.search(this.value).draw();
+            });
+
+            // Ensure columns adjust properly on window resize
+            $(window).on('resize', function () {
+                dataTable.columns.adjust();
+            });
         }
 
         function renderDetailedProgress(regNo) {

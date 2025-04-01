@@ -196,9 +196,6 @@ function getScoresData()
     // Process overall scores with diff
     processArrayResultsWithDiff($overallResult, "overall_scores", $data, $baseColumns, $previousOverallMap);
 
-    // Calculate rankings for overall scores
-    calculateRankings($data);
-
     return [
         "status" => "success",
         "data" => $data,
@@ -400,108 +397,6 @@ function getPreviousOverallScores($conn, $previousDate)
     }
 
     return $scores;
-}
-
-// Function to calculate rankings for overall scores
-function calculateRankings(&$data)
-{
-    // Get course columns (excluding base columns)
-    $baseColumnCount = 8; // Number of base columns
-    $courseColumns = [];
-
-    // Filter out only the actual course columns (not the diff columns)
-    foreach (array_slice($data["overall_scores"]["headers"], $baseColumnCount) as $column) {
-        if (strpos($column, '_diff') === false) {
-            $courseColumns[] = $column;
-        }
-    }
-
-    // For each course column, calculate rankings
-    foreach ($courseColumns as $course) {
-        // Extract scores for this course
-        $scores = [];
-        foreach ($data["overall_scores"]["rows"] as $index => $row) {
-            if (isset($row[$course]) && is_numeric($row[$course])) {
-                $scores[$index] = $row[$course];
-            } else {
-                $scores[$index] = 0; // Default score for missing or non-numeric values
-            }
-        }
-
-        // Sort scores in descending order
-        arsort($scores);
-
-        // Assign ranks (handling ties)
-        $rank = 1;
-        $previousScore = null;
-        $sameRankCount = 0;
-
-        foreach ($scores as $index => $score) {
-            if ($previousScore !== null && $score < $previousScore) {
-                $rank += $sameRankCount;
-                $sameRankCount = 1;
-            } else if ($previousScore !== null && $score == $previousScore) {
-                $sameRankCount++;
-            } else {
-                $sameRankCount = 1;
-            }
-
-            // Add rank to the data
-            $rankColumn = $course . "_rank";
-            $data["overall_scores"]["rows"][$index][$rankColumn] = $rank;
-
-            $previousScore = $score;
-        }
-
-        // Add the rank column to headers
-        $data["overall_scores"]["headers"][] = $rankColumn;
-    }
-
-    // Calculate overall rank across all courses
-    $overallScores = [];
-    foreach ($data["overall_scores"]["rows"] as $index => $row) {
-        $totalScore = 0;
-        $courseCount = 0;
-
-        foreach ($courseColumns as $course) {
-            if (isset($row[$course]) && is_numeric($row[$course])) {
-                $totalScore += $row[$course];
-                $courseCount++;
-            }
-        }
-
-        // Calculate average score if user has taken any courses
-        $overallScores[$index] = $courseCount > 0 ? $totalScore / $courseCount : 0;
-    }
-
-    // Sort overall scores in descending order
-    arsort($overallScores);
-
-    // Assign overall ranks
-    $rank = 1;
-    $previousScore = null;
-    $sameRankCount = 0;
-
-    foreach ($overallScores as $index => $score) {
-        if ($previousScore !== null && $score < $previousScore) {
-            $rank += $sameRankCount;
-            $sameRankCount = 1;
-        } else if ($previousScore !== null && $score == $previousScore) {
-            $sameRankCount++;
-        } else {
-            $sameRankCount = 1;
-        }
-
-        // Add overall rank to the data
-        $data["overall_scores"]["rows"][$index]["overall_rank"] = $rank;
-        $data["overall_scores"]["rows"][$index]["overall_average"] = round($score, 2);
-
-        $previousScore = $score;
-    }
-
-    // Add the overall rank column to headers
-    $data["overall_scores"]["headers"][] = "overall_average";
-    $data["overall_scores"]["headers"][] = "overall_rank";
 }
 
 // Main execution
