@@ -477,7 +477,7 @@
 
             // Password protection for the Passwords tab
             const passwordTabBtn = $('[data-tab="passwords"]');
-            const correctPassword = "admin123";
+            const correctPasswordHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"; // SHA-256 hash of password
 
             // Override click event for passwords tab
             passwordTabBtn.off('click').on('click', function (e) {
@@ -490,7 +490,7 @@
             });
 
             // Submit password button click
-            $('#submitPassword').on('click', function () {
+            $('#submitPassword').on('click', async function () {
                 const enteredPassword = $('#passwordInput').val();
 
                 if (enteredPassword === correctPassword) {
