@@ -169,6 +169,16 @@
                     </button>
                     <button
                         class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
+                        data-tab="batch-practice-summary">
+                        Batch Practice Summary
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
+                        data-tab="batch-test-summary">
+                        Batch Test Summary
+                    </button>
+                    <button
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-green-600"
                         data-tab="overall-scores">
                         Overall Scores
                     </button>
@@ -210,6 +220,24 @@
                 <div id="test-summary" class="tab-content hidden">
                     <div class="overflow-x-auto">
                         <table id="test-summary-table" class="min-w-full divide-y divide-gray-200">
+                            <!-- Data will be loaded dynamically -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Batch Practice Summary Tab -->
+                <div id="batch-practice-summary" class="tab-content hidden">
+                    <div class="overflow-x-auto">
+                        <table id="batch-practice-summary-table" class="min-w-full divide-y divide-gray-200">
+                            <!-- Data will be loaded dynamically -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Batch Test Summary Tab -->
+                <div id="batch-test-summary" class="tab-content hidden">
+                    <div class="overflow-x-auto">
+                        <table id="batch-test-summary-table" class="min-w-full divide-y divide-gray-200">
                             <!-- Data will be loaded dynamically -->
                         </table>
                     </div>
@@ -617,6 +645,8 @@
 
             renderSubjectSummaryTable('practice-summary', filteredPractice);
             renderSubjectSummaryTable('test-summary', filteredTest);
+            renderBatchSummaryTable('batch-practice-summary', filteredPractice);
+            renderBatchSummaryTable('batch-test-summary', filteredTest);
             renderTable('practice-scores', filteredPractice);
             renderTable('test-scores', filteredTest);
             if (filteredOverall) {
@@ -850,6 +880,232 @@
             });
         }
 
+        function renderBatchSummaryTable(tableId, tableData) {
+            // Validate input data
+            if (!tableData || !tableData.headers || !tableData.rows) {
+                console.error(`Invalid data format for batch summary table`);
+                return;
+            }
+
+            const tableContainer = $(`#${tableId}-table`);
+            if (tableContainer.length === 0) {
+                console.error(`Table container #${tableId}-table not found`);
+                return;
+            }
+
+            // Clear existing table content
+            tableContainer.empty();
+
+            // Dynamically extract subjects, assessment types, and levels from headers
+            const subjects = [];
+            const subjectLevels = {};
+            const assessmentTypes = new Set(); // To track Practice vs Test
+
+            // Find unique subjects, assessment types, and their levels
+            tableData.headers.forEach(header => {
+                // Exclude headers containing _diff
+                if (!header.includes('_diff')) {
+                    // Match both Practice and Test patterns
+                    const match = header.match(/L(\d+) - (Practice|Test) - (\w+)/);
+                    if (match) {
+                        const [, level, assessmentType, subject] = match;
+
+                        // Add assessment type to set
+                        assessmentTypes.add(assessmentType);
+
+                        if (!subjects.includes(subject)) {
+                            subjects.push(subject);
+                            subjectLevels[subject] = [];
+                        }
+                        if (!subjectLevels[subject].includes(level)) {
+                            subjectLevels[subject].push(level);
+                        }
+                    }
+                }
+            });
+
+            // Sort levels for consistent display
+            Object.keys(subjectLevels).forEach(subject => {
+                subjectLevels[subject].sort((a, b) => parseInt(a) - parseInt(b));
+            });
+
+            // Convert assessment types to array for iteration
+            const assessmentTypesArray = Array.from(assessmentTypes);
+
+            // Create table header
+            const thead = $('<thead>');
+            const headerRow = $('<tr>');
+
+            // Add Batch and Total Students headers
+            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0').text('Batch'));
+            headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0').text('Total Students'));
+
+            // Add subject-level-assessment headers
+            subjects.forEach(subject => {
+                subjectLevels[subject].forEach(level => {
+                    assessmentTypesArray.forEach(assessmentType => {
+                        headerRow.append($('<th>').addClass('border px-4 py-2 bg-white sticky top-0')
+                            .text(`${subject} L${level} ${assessmentType}`));
+                    });
+                });
+            });
+
+            thead.append(headerRow);
+            tableContainer.append(thead);
+
+            const tbody = $('<tbody>');
+
+            // Collect batch totals and aggregate data
+            const batchTotals = {};
+            const batchCompletedYesterday = {};
+            const aggregatedData = {};
+            const aggregatedCompletedYesterday = {};
+
+            // Process rows to aggregate data
+            tableData.rows.forEach(rowData => {
+                const batch = rowData.batch || 'Unknown';
+
+                // Count total students per batch
+                if (!batchTotals[batch]) {
+                    batchTotals[batch] = 1;
+                    batchCompletedYesterday[batch] = 0;
+                } else {
+                    batchTotals[batch]++;
+                }
+
+                // Initialize batch in aggregatedData if not exists
+                if (!aggregatedData[batch]) {
+                    aggregatedData[batch] = { batch: batch };
+                    aggregatedCompletedYesterday[batch] = { batch: batch };
+                }
+
+                // Process each subject
+                subjects.forEach(subject => {
+                    // Process available levels for each subject
+                    subjectLevels[subject].forEach((level, levelIndex) => {
+                        // Process each assessment type (Practice and Test)
+                        assessmentTypesArray.forEach(assessmentType => {
+                            const assessmentKey = `L${level} - ${assessmentType} - ${subject}`;
+                            const assessmentDiffKey = `${assessmentKey}_diff`;
+
+                            // Check if this is the highest level
+                            const isHighestLevel = levelIndex === subjectLevels[subject].length - 1;
+                            let shouldCount = false;
+
+                            if (isHighestLevel) {
+                                // For highest level, count if score > 0
+                                shouldCount = rowData[assessmentKey] && parseFloat(rowData[assessmentKey]) > 0;
+                            } else {
+                                // For all other levels, count if next level has score > 0
+                                const nextLevel = subjectLevels[subject][levelIndex + 1];
+                                const nextLevelKey = `L${nextLevel} - ${assessmentType} - ${subject}`;
+
+                                shouldCount = rowData[nextLevelKey] && parseFloat(rowData[nextLevelKey]) > 0;
+                            }
+
+                            if (shouldCount) {
+                                // Initialize the key if not exists
+                                if (!aggregatedData[batch][assessmentKey]) {
+                                    aggregatedData[batch][assessmentKey] = 0;
+                                    aggregatedCompletedYesterday[batch][assessmentKey] = 0;
+                                }
+                                aggregatedData[batch][assessmentKey]++;
+
+                                // Check if completed in previous day (diff is positive)
+                                if (rowData[assessmentDiffKey] && parseFloat(rowData[assessmentDiffKey]) > 0) {
+                                    aggregatedCompletedYesterday[batch][assessmentKey]++;
+                                    batchCompletedYesterday[batch]++;
+                                }
+                            }
+                        });
+                    });
+                });
+            });
+
+            // Render rows
+            Object.values(aggregatedData).forEach(rowData => {
+                const row = $('<tr>').addClass('hover:bg-gray-100');
+                const batch = rowData.batch;
+
+                // Batch column with total students
+                const totalStudents = batchTotals[batch] || 0;
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-0 bg-white whitespace-nowrap').text(batch));
+                row.append($('<td>').addClass('border px-4 py-2 sticky left-20 bg-white text-center whitespace-nowrap').text(totalStudents));
+
+                // Subject columns
+                subjects.forEach(subject => {
+                    // Process available levels for each subject
+                    subjectLevels[subject].forEach(level => {
+                        // Process each assessment type (Practice and Test)
+                        assessmentTypesArray.forEach(assessmentType => {
+                            const assessmentKey = `L${level} - ${assessmentType} - ${subject}`;
+
+                            // Get value
+                            const assessmentValue = aggregatedData[batch][assessmentKey] || 0;
+                            const assessmentCompletedYesterday = aggregatedCompletedYesterday[batch][assessmentKey] || 0;
+
+                            row.append($('<td>').addClass('border px-4 py-2 text-center whitespace-nowrap')
+                                .html(assessmentCompletedYesterday > 0
+                                    ? `${assessmentValue} <span class="text-sm text-green-600">(+${assessmentCompletedYesterday})</span>`
+                                    : `${assessmentValue}`)
+                            );
+                        });
+                    });
+                });
+
+                tbody.append(row);
+            });
+
+            tableContainer.append(tbody);
+
+            if ($.fn.DataTable.isDataTable(`#${tableId}-table`)) {
+                $(`#${tableId}-table`).DataTable().destroy();
+            }
+
+            // Initialize DataTable with advanced configuration
+            const dataTable = $(`#${tableId}-table`).DataTable({
+                scrollX: true,
+                scrollY: '400px',
+                scrollCollapse: true,
+                paging: false,
+                fixedHeader: {
+                    header: true
+                },
+                fixedColumns: {
+                    left: 2
+                },
+                autoWidth: false,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'colvis',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm',
+                        text: 'Toggle Columns'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
+                        text: 'Export CSV'
+                    }
+                ],
+                language: {
+                    search: "Filter:",
+                    info: "Showing _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)"
+                },
+                initComplete: function () {
+                    $('.dt-buttons').addClass('mb-4');
+                    this.api().columns.adjust().draw();
+                }
+            });
+
+            // Window resize handler
+            $(window).on('resize', function () {
+                dataTable.columns.adjust();
+            });
+        }
+
         function fetchAndRenderAllData() {
             // Show loading indicator
             showLoading();
@@ -868,6 +1124,9 @@
 
                         renderSubjectSummaryTable('practice-summary', response.data.practice_scores);
                         renderSubjectSummaryTable('test-summary', response.data.test_scores);
+
+                        renderBatchSummaryTable('batch-practice-summary', response.data.practice_scores);
+                        renderBatchSummaryTable('batch-test-summary', response.data.test_scores);
 
                         hideLoading();
                     } else {
