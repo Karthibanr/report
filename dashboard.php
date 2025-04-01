@@ -603,6 +603,15 @@
             });
         });
 
+        // SHA-256 hashing function
+        async function sha256(str) {
+            const utf8 = new TextEncoder().encode(str); // Convert string to UTF-8
+            const hashBuffer = await crypto.subtle.digest('SHA-256', utf8); // Hash the password asynchronously
+            let hashArray = Array.from(new Uint8Array(hashBuffer)); // Convert bytes to array
+            let hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join(''); // Convert bytes to hex string
+            return hashHex;
+        }
+
         function filterDataWithCriteria(criteria) {
             if (!globalFetchedData) return;
 
