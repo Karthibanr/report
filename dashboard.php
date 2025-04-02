@@ -1606,14 +1606,8 @@
                             // Force redraw of the entire table to apply new sorting
                             dt.rows().invalidate('data').draw();
                         }
-                    },
-                    {
-                        text: 'Sort by Overall Rank',
-                        className: 'bg-primary-600 text-white rounded px-3 py-1 text-sm ml-2',
-                        action: function (e, dt, node, config) {
-                            dt.order([headers.indexOf('overall_average'), 'asc']).draw();
-                        }
                     }
+                    // Sort by Overall Rank button removed
                 ],
                 language: {
                     search: "Filter:",
