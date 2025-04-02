@@ -111,7 +111,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="w-full py-6 px-4 sm:px-6 lg:px-8">
+    <main class="w-full py-1 px-4 sm:px-6 lg:px-8">
         <!-- Filters Section -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <form id="filterForm" class="filter-container">
@@ -365,7 +365,7 @@
     </div>
 
     <!-- Info Modal -->
-    <div id="infoModal" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog"
+    <div id="infoModal" class="fixed inset-0 overflow-y-auto hidden z-50" aria-labelledby="modal-title" role="dialog"
         aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
@@ -411,7 +411,7 @@
     </div>
 
     <!-- Logout Confirmation Modal -->
-    <div id="logoutConfirmModal" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="modal-title"
+    <div id="logoutConfirmModal" class="fixed inset-0 overflow-y-auto hidden z-50" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
@@ -566,7 +566,6 @@
                 }, 100);
             });
 
-            // Rest of your existing code
             $('#infoButton').click(function () {
                 $('#infoModal').removeClass('hidden');
             });
@@ -1268,7 +1267,7 @@
                 columns: columns,
                 columnDefs: columnDefs,
                 responsive: false,
-                scrollX: true,
+                scrollX: false,
                 scrollY: '400px',
                 scrollCollapse: true,
                 paging: true,
@@ -1568,7 +1567,7 @@
                 columns: columns,
                 columnDefs: columnDefs,
                 responsive: false,
-                scrollX: true,
+                scrollX: false,
                 scrollY: '400px',
                 scrollCollapse: true,
                 paging: true,
