@@ -31,50 +31,52 @@ function getScoresData()
     $latestDate = getLatestDate($conn);
 
     if (isset($_GET['previousDate'])) {
-        $previousDateOption = (int) $_GET['previousDate'];
+        if ($_GET['previousDate'] == '') {
+            $previousDateOption = (int) $_GET['previousDate'];
 
-        // Calculate previous date based on option
-        switch ($previousDateOption) {
-            case 1:
-                // 1 day before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -1 day'));
-                break;
-            case 2:
-                // 3 days before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -3 days'));
-                break;
-            case 3:
-                // 7 days before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -7 days'));
-                break;
-            case 4:
-                // 1 month before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -1 month'));
-                break;
-            case 5:
-                // 2 months before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -2 months'));
-                break;
-            case 6:
-                // 3 months before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -3 months'));
-                break;
-            case 7:
-                // 6 months before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -6 months'));
-                break;
-            case 8:
-                // 1 year before
-                $previousDate = date('Y-m-d', strtotime($latestDate . ' -1 year'));
-                break;
-            default:
-                // Fallback to last available previous date in DB
-                $previousDate = getPreviousDate($conn, $latestDate);
-                break;
+            // Calculate previous date based on option
+            switch ($previousDateOption) {
+                case 1:
+                    // 1 day before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -1 day'));
+                    break;
+                case 2:
+                    // 3 days before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -3 days'));
+                    break;
+                case 3:
+                    // 7 days before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -7 days'));
+                    break;
+                case 4:
+                    // 1 month before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -1 month'));
+                    break;
+                case 5:
+                    // 2 months before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -2 months'));
+                    break;
+                case 6:
+                    // 3 months before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -3 months'));
+                    break;
+                case 7:
+                    // 6 months before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -6 months'));
+                    break;
+                case 8:
+                    // 1 year before
+                    $previousDate = date('Y-m-d', strtotime($latestDate . ' -1 year'));
+                    break;
+                default:
+                    // Fallback to last available previous date in DB
+                    $previousDate = getPreviousDate($conn, $latestDate);
+                    break;
+            }
+        } else {
+            // Default: previous date based on DB
+            $previousDate = $latestDate;
         }
-    } else {
-        // Default: previous date based on DB
-        $previousDate = getPreviousDate($conn, $latestDate);
     }
 
 
@@ -200,9 +202,9 @@ function getScoresData()
         "status" => "success",
         "data" => $data,
         "dates" => [
-            "latest" => $latestDate,
-            "previous" => $previousDate
-        ]
+                "latest" => $latestDate,
+                "previous" => $previousDate
+            ]
     ];
 }
 

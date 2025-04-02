@@ -135,6 +135,7 @@
                         </label>
                         <select name="previousdate" id="previousDate"
                             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+                            <option>Select</option>
                             <option value="3">Week</option>
                             <option value="1">1 Day</option>
                             <option value="2">3 Day</option>
@@ -609,6 +610,7 @@
             const hashBuffer = await crypto.subtle.digest('SHA-256', utf8); // Hash the password asynchronously
             let hashArray = Array.from(new Uint8Array(hashBuffer)); // Convert bytes to array
             let hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join(''); // Convert bytes to hex string
+            console.log(hashHex);
             return hashHex;
         }
 
