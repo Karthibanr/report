@@ -74,7 +74,8 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
     <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
 
-
+    <!-- CryptoJs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -493,7 +494,7 @@
             // Submit password button click
             $('#submitPassword').on('click', async function () {
                 const enteredPassword = $('#passwordInput').val();
-                const enteredPasswordHash = await sha256(enteredPassword);  // Hash the entered password asynchronously
+                const enteredPasswordHash = CryptoJS.SHA256(enteredPassword).toString(CryptoJS.enc.Hex);  // Hash the entered password using SHA256
 
                 if (enteredPasswordHash === correctPasswordHash) {
                     // Hide modal
@@ -603,16 +604,6 @@
                 renderDetailedProgress(regNo);
             });
         });
-
-        // SHA-256 hashing function
-        async function sha256(str) {
-            const utf8 = new TextEncoder().encode(str); // Convert string to UTF-8
-            const hashBuffer = await crypto.subtle.digest('SHA-256', utf8); // Hash the password asynchronously
-            let hashArray = Array.from(new Uint8Array(hashBuffer)); // Convert bytes to array
-            let hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join(''); // Convert bytes to hex string
-            console.log(hashHex);
-            return hashHex;
-        }
 
         function filterDataWithCriteria(criteria) {
             if (!globalFetchedData) return;
