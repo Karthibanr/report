@@ -580,11 +580,17 @@
 
             $('#filterForm').on('submit', function (e) {
                 e.preventDefault();
+                showLoading();
+
                 const formData = {};
                 $(this).serializeArray().forEach(item => {
                     if (item.value) formData[item.name] = item.value;
                 });
-                filterDataWithCriteria(formData);
+
+                setTimeout(() => {
+                    filterDataWithCriteria(formData);
+                    hideLoading();
+                }, 10);
             });
 
             $('#previousDate').on('change', function () {
@@ -1267,7 +1273,8 @@
                 columns: columns,
                 columnDefs: columnDefs,
                 responsive: false,
-                scrollX: false,
+                autoWidth: false,
+                scrollX: true,
                 scrollY: '400px',
                 scrollCollapse: true,
                 paging: true,
@@ -1567,7 +1574,8 @@
                 columns: columns,
                 columnDefs: columnDefs,
                 responsive: false,
-                scrollX: false,
+                autoWidth: false,
+                scrollX: true,
                 scrollY: '400px',
                 scrollCollapse: true,
                 paging: true,
