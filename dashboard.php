@@ -1,18 +1,6 @@
-<?php 
-    session_start();
-    if (!isset($_SESSION['username'] )){
-        header('Location: index.php');
-    }
-    if (isset($_POST['confirmLogout'])) {
-        // Destroy session data
-        session_unset();     // Unset all session variables
-        session_destroy();   // Destroy the session
-    
-        // Redirect the user after logout
-        header("Location: index.php");  // Redirect to the homepage or login page
-        exit();
-    }
-    include 'filters.php'; 
+<?php
+
+include 'filters.php';
 ?>
 
 <!DOCTYPE html>
